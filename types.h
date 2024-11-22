@@ -26,17 +26,17 @@ typedef struct{
     char tel[20];
     char id[20];
     char pwd[20];
-    char birth[8];
+    char birth[9];
     Result userResult;
 } User;
 
 typedef struct{
-    char leftLight;
-    char rightLight;
+    int leftLight;
+    int rightLight;
     double kph;
     int score;
-    char failYn;
-    char startupYn;
+    int failYn;
+    int startupYn;
     char direction;
     Position position;
 } Car;
