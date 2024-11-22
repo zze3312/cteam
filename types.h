@@ -39,6 +39,8 @@ typedef struct{
     int startupYn;
     char direction;
     Position position;
+    int failCnt;
+    int failLog[10];
 } Car;
 
 typedef struct{
