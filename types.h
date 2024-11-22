@@ -1,4 +1,9 @@
 typedef struct{
+    int col;
+    int row;
+} Position;
+
+typedef struct{
     int questionNumber;
     char question[500];
     char answer1[200];
@@ -31,4 +36,12 @@ typedef struct{
     double kph;
     int score;
     char failYn;
+    char startupYn;
+    char direction;
+    Position position;
 } Car;
+
+typedef struct{
+    Position position;
+    int sign;
+} Blinker;
