@@ -1,6 +1,6 @@
 typedef struct{
-    int col;
     int row;
+    int col;
 } Position;
 
 typedef struct{
@@ -31,19 +31,29 @@ typedef struct{
 } User;
 
 typedef struct{
-    int leftLight;
-    int rightLight;
+    char leftLight;
+    char rightLight;
     double kph;
     int score;
-    int failYn;
-    int startupYn;
+    char failYn;
+    char startupYn;
     char direction;
-    Position position;
+    Position now;
+    Position before;
+    char beforeBlock;
     int failCnt;
-    int failLog[10];
+    char failLog[10];
+    int turn;
 } Car;
 
-typedef struct{
-    Position position;
-    int sign;
-} Blinker;
+
+typedef struct {
+    Position blinker;
+    Position crossWolkBlock[20];
+} CrossWolk;
+
+typedef struct {
+    Position pos;
+    char direction;
+    char gubun;
+} PersonAndCar;
