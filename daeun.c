@@ -14,7 +14,7 @@
 
 void mainComment(); // 메인화면
 void loginComment(); // 로그인 전 메뉴
-void userLogin(char * loginID); // 로그인
+void userLogin(User *); // 로그인
 void userInfoAdd(); // 회원가입
 void userInfoFind(); // 가입내역조회
 void subComment(); // 로그인 후 메뉴
@@ -22,6 +22,7 @@ void subComment(); // 로그인 후 메뉴
 int main(void)
 {
 	int mainMenuNum;
+	User loginUser;
 	while(1)
 	{
 		mainComment();
@@ -32,8 +33,8 @@ int main(void)
 		switch(mainMenuNum)
 		{
 			case 1: // 로그인
-                userLogin();
-				// if (userLogin)
+                 userLogin(&loginUser);
+				//if (strcmp(loginUser.id, "\0") == 1)
 				// {
 				// 	printf("님의 접속을 환영합니다. \n"); // loginID
 					
@@ -117,14 +118,11 @@ void loginComment()
 	printf("+-----------------------------------------------------------+ \n");
 }
 
-void userLogin(char * loginID) // 사용자 입력 요청 - 로그인 : 아이디 id, 비번 pw
+void userLogin(User *loginUser) // 사용자 입력 요청 - 로그인 : 아이디 id, 비번 pw
 {	
 	char userID[STRING_SIZE];
 	char userPWD[STRING_SIZE];
-	char line[STRING_SIZE * 3];	
-	char * name;
-	char * id;
-	char * pwd;
+	char line[STRING_SIZE * 3];
 	
 	printf("+------------------------ 로 그 인 -------------------------+ \n");
 	fputs(" ID : \n", stdout); fgets(userID, sizeof(userID), stdin);
@@ -134,28 +132,25 @@ void userLogin(char * loginID) // 사용자 입력 요청 - 로그인 : 아이�
 	if (fp_log == NULL)
 	{
 		printf(" 가입된 정보 내역이 없습니다. 회원가입을 진행해주세요. \n");
-		return 0;
 	}	
 
 	while(fgets(line, sizeof(line), fp_log)) // 파일 내 ID/PWD 정보 비교
 	{		
-		name = strtok(line, ","); // 데이터 구분
-		id = strtok(NULL, ",");
-		pwd = strtok(NULL, "\n");
+		strcpy(loginUser -> name, strtok(line, ",")); // 데이터 구분
+		strcpy(loginUser -> id, strtok(NULL, ","));
+		strcpy(loginUser -> pwd, strtok(NULL, "\n"));
 			
-		if (strcmp(id, userID) == 0 && strcmp(pwd, userPWD) == 0)
+		if (strcmp(loginUser -> id, userID) == 0 && strcmp(loginUser -> pwd, userPWD) == 0)
 		{
-			fclose(fp_log);
-			return 1; // 로그인 성공
+            break;
 		}
 	}
 	fclose(fp_log);
-	return 0; // 로그인 실패
 }
 
 void userInfoAdd()
 {
-	FILE * fp = fopen(FILE_LOGIN, "a+t");
+	FILE * fp = fopen(FILE_LOGIN, "at");
 	if (fp == NULL)
 	{
 		printf(" 파일을 불러올 수 없습니다. \n");
@@ -178,7 +173,8 @@ void userInfoAdd()
 
 void userInfoFind()
 {
-	char userfind[STRING_SIZE];
+	char userName[STRING_SIZE];
+	char userBirth[STRING_SIZE];
 	char line[STRING_SIZE * 3];
 	char * name;
 	char * birth;
@@ -190,8 +186,10 @@ void userInfoFind()
 	printf("+-----------------------------------------------------------+ \n");
 	printf("+-------------------- 가 입 내 역 조 회 --------------------+ \n");
 	printf(" 회원정보에 등록된 이름 또는 생년월일을 입력해주세요. \n");
-	printf(" 이름/생년월일 : ");
-	scanf("%s", userfind);
+	printf(" 이름 : ");
+	scanf("%s", userName);
+	printf(" 생년월일 : ");
+	scanf("%s", userBirth);
 	
 	FILE * fp = fopen(FILE_LOGIN, "rt");
 	if (fp == NULL)
@@ -200,15 +198,14 @@ void userInfoFind()
 		return;
 	}
 	
-	while (fgets(line, sizeof(line), fp))
-	{
+	while (fgets(line, sizeof(line), fp)){
 		name = strtok(line, ",");
 		birth = strtok(NULL, ",");
 		tel = strtok(NULL, ",");
 		id = strtok(NULL, ",");
 		pwd = strtok(NULL, "\n");
 		
-		if (strcmp(name, userfind) == 0 || strcmp(birth, userfind) == 0)
+		if (strcmp(name, userName) == 0 || strcmp(birth, userBirth) == 0)
 		{
 			printf("+------------------- 사용자의 가입 정보 --------------------+ \n");
 			printf(" 이름 : %s \n", name);
