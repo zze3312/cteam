@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include </home/lms/CLionProjects/cteam/types.h>
+#include "types.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
