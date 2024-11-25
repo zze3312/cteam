@@ -56,4 +56,5 @@ typedef struct {
     Position pos;
     char direction;
     char gubun;
+    char moveYn;
 } PersonAndCar;
