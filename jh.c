@@ -85,11 +85,16 @@ enum failReason {
 
 void setMap(char [ROW][COL]);
 void setObstacle(CrossWolk *, PersonAndCar *, PersonAndCar *);
+void setCarPosition(char [ROW][COL], Car *);
+
+void moveUserCar(char [ROW][COL], Car *);
+void movePerson(char [ROW][COL], PersonAndCar *, int);
+void moveCar(char [ROW][COL], PersonAndCar *, int);
+
 void checkCrosswalk(CrossWolk *, Car *);
+
 void printMap(char [ROW][COL], Car *);
-void searchCarPosition(char [ROW][COL], Car *);
 void printStatus(Car, char);
-void moveCar(char [ROW][COL], Car *);
 void printFailResult(Car *);
 
 void main() {
@@ -114,16 +119,16 @@ void main() {
 
     setMap(map);
     setObstacle(cws, psn, car);
-    searchCarPosition(map, &userCar);
+    setCarPosition(map, &userCar);
 
     while (1) {
         system("clear");
         printMap(map, &userCar);
         printStatus(userCar, course);
-
-
-        moveCar(map, &userCar);
+        moveUserCar(map, &userCar);
         checkCrosswalk(cws, &userCar);
+        moveCar(map, car, userCar.turn);
+        movePerson(map, psn, userCar.turn);
         if (userCar.score < 70 || userCar.failYn == ON) {
             userCar.failYn = ON;
             break;
@@ -159,17 +164,17 @@ void setObstacle(CrossWolk *cws, PersonAndCar *psn, PersonAndCar *cars) {
     };
 
     PersonAndCar tempPsn[4] = {
-        {26, 44, SOUTH, PERSON_NUM},
-        {55, 55, WEST, PERSON_NUM},
-        {64, 90, WEST, PERSON_NUM},
-        {89, 25, WEST, PERSON_NUM}
+        {26, 44, SOUTH, PERSON_NUM, OFF, MAP_ICON2_NUM, OFF},
+        {55, 55, EAST, PERSON_NUM, OFF, MAP_ICON2_NUM, OFF},
+        {64, 90, EAST, PERSON_NUM, OFF, MAP_ICON2_NUM, OFF},
+        {89, 25, EAST, PERSON_NUM, OFF, MAP_ICON2_NUM, OFF}
     };
 
     PersonAndCar tempCars[4] = {
-        {17, 18, WEST, CAR_NUM},
-        {28, 82, EAST, CAR_NUM},
-        {40, 21, WEST, CAR_NUM},
-        {45, 61, SOUTH, CAR_NUM}
+        {17, 31, EAST, CAR_NUM, ON, MAP_ICON1_NUM, OFF},
+        {28, 55, WEST, CAR_NUM, ON, MAP_ICON1_NUM, OFF},
+        {40, 21, EAST, CAR_NUM, ON, MAP_ICON1_NUM, OFF},
+        {45, 61, NORTH, CAR_NUM, ON, MAP_ICON1_NUM, OFF}
     };
 
     for (int i = 0; i < 4; i++) {
@@ -178,6 +183,322 @@ void setObstacle(CrossWolk *cws, PersonAndCar *psn, PersonAndCar *cars) {
         cars[i] = tempCars[i];
     }
 
+}
+
+void setCarPosition(char map[ROW][COL], Car *cptr) {
+    cptr -> now.row = 70;
+    cptr -> now.col = 82;
+
+    cptr -> before.row = 70;
+    cptr -> before.col = 82;
+
+    cptr -> beforeBlock = MAP_ICON4_NUM;
+
+    map[cptr -> now.row][cptr -> now.col] = USER_CAR_ICON_NUM;
+}
+
+void moveUserCar(char map[ROW][COL], Car *car) {
+    char move;
+    // 이동키 받기
+    read(0, &move, sizeof(move));
+
+    // 시동안걸려있으면 아무것도 동작안함
+    if ((car -> startupYn) == ON) {
+        // 이전위치 확인 -> 가속붙었을 때 신호위반이나 사고 확인용
+        car -> before.row = car -> now.row;
+        car -> before.col = car -> now.col;
+
+        map[car -> now.row][car -> now.col] = car -> beforeBlock;
+        if (move == KEY_GO || move == KEY_ACCEL || move == KEY_BREAK) {
+            car -> turn ++; //차가 움직일 때만 턴수 증가
+
+            if (move == KEY_ACCEL) {
+                car -> kph += 20.0;
+            }
+
+            if (move == KEY_BREAK) {
+                if (car -> kph > 0){
+                    car -> kph -= 20.0;
+                }
+            }
+
+            // 속도 20km/h당 1칸
+            if (car -> direction == EAST) {
+                car -> now.col += car -> kph / 20.0;
+            }else if (car -> direction == WEST) {
+                (car -> now.col) -=  car -> kph / 20.0;
+            }else if (car -> direction == SOUTH) {
+                (car -> now.row) += car -> kph / 20.0;
+            }else if (car -> direction == NORTH) {
+                (car -> now.row) -=  car -> kph / 20.0;
+            }
+        }else if (move == KEY_LEFT) {
+            // 좌회전하는데 깜빡이를 깜빡...^^...
+            if (car -> leftLight == OFF) {
+                car -> failLog[car -> failCnt] = FAIL_REASON_1;
+                (car -> failCnt)++;
+                car -> score -= 10;
+            }
+
+            // 아무튼 깜빡이들 끔
+            car -> leftLight = OFF;
+            car -> rightLight = OFF;
+
+            // 방향 전환
+            if (car -> direction == NORTH) {
+                car -> direction = WEST;
+            }else if (car -> direction == WEST) {
+                car -> direction = SOUTH;
+            }else if (car -> direction == SOUTH) {
+                car -> direction = EAST;
+            }else if (car -> direction == EAST) {
+                car -> direction = NORTH;
+            }
+
+        }else if (move == KEY_RIGHT) {
+            if (car -> rightLight == OFF) {
+                car -> failLog[car -> failCnt] = FAIL_REASON_2;
+                (car -> failCnt)++;
+                car -> score -= 10;
+            }
+
+            car -> leftLight = OFF;
+            car -> rightLight = OFF;
+
+            if (car -> direction == NORTH) {
+                car -> direction = EAST;
+            }else if (car -> direction == WEST) {
+                car -> direction = NORTH;
+            }else if (car -> direction == SOUTH) {
+                car -> direction = WEST;
+            }else if (car -> direction == EAST) {
+                car -> direction = SOUTH;
+            }
+        } else if (move == KEY_LEFT_LIGHT) {
+            // 왼깜빡 키면 오른깜빡 끄기
+            if (car -> rightLight == ON) {
+                car -> rightLight = OFF;
+            }
+            // 깜빡이가 켜져있으면 끄고 꺼져있으면 켜기
+            if (car -> leftLight == ON) {
+                car -> leftLight = OFF;
+            }else {
+                car -> leftLight = ON;
+            }
+        } else if (move == KEY_RIGHT_LIGHT) {
+            if (car -> leftLight == ON) {
+                car -> leftLight = OFF;
+            }
+
+            if (car -> rightLight == ON) {
+                car -> rightLight = OFF;
+            }else {
+                car -> rightLight = ON;
+            }
+        } else if (move == KEY_CHANGE_LINE_LEFT) {
+            // 차선변경 깜빡이를 깜빡쓰..
+            if (car -> leftLight == OFF) {
+                car -> failLog[car -> failCnt] = FAIL_REASON_3;
+                (car -> failCnt)++;
+                car -> score -= 10;
+            }
+
+            // 여기도 아무튼 깜빡이를 꺼줌
+            car -> leftLight = OFF;
+            car -> rightLight = OFF;
+
+            // 차가 바라보고 있는 방향별로 차선변경 동작
+            if (car -> direction == NORTH) {
+                (car -> now.col)--;
+            }else if (car -> direction == WEST) {
+                (car -> now.row)++;
+            }else if (car -> direction == SOUTH) {
+                (car -> now.col)++;
+            }else if (car -> direction == EAST) {
+                (car -> now.row)--;
+            }
+        } else if (move == KEY_CHANGE_LINE_RIGHT) {
+            if (car -> rightLight == OFF) {
+                car -> failLog[car -> failCnt] = FAIL_REASON_4;
+                (car -> failCnt)++;
+                car -> score -= 10;
+            }
+
+            car -> leftLight = OFF;
+            car -> rightLight = OFF;
+
+            if (car -> direction == NORTH) {
+                (car -> now.col)++;
+            }else if (car -> direction == WEST) {
+                (car -> now.row)--;
+            }else if (car -> direction == SOUTH) {
+                (car -> now.col)--;
+            }else if (car -> direction == EAST) {
+                (car -> now.row)++;
+            }
+        } else if (move == KEY_OFF) {
+            if ( car -> kph != 0.0) {
+                car -> failLog[car -> failCnt] = FALL_REASON_9;
+                (car -> failCnt)++;
+                car -> score -= 10;
+            }
+            car -> kph = 0.0;
+            car -> startupYn = OFF;
+        }
+
+        // 장애물 부딪히면 실격
+        if (map[car -> now.row][car -> now.col] == PERSON_NUM
+            || map[car -> now.row][car -> now.col] == CAR_NUM
+            || map[car -> now.row][car -> now.col] == MAP_ICON2_NUM
+            || map[car -> now.row][car -> now.col] == MAP_ICON3_NUM) {
+            if (map[car -> now.row][car -> now.col] == MAP_ICON3_NUM){
+                car -> failLog[car -> failCnt] = FALL_REASON_10;
+            }else {
+                car -> failLog[car -> failCnt] = FALL_REASON_8;
+            }
+
+            (car -> failCnt)++;
+            car -> score -= 50;
+        }
+
+        // 자동차 도착전 아이콘 저장
+        car -> beforeBlock = map[car -> now.row][car -> now.col];
+        // 변경된 위치값에 자동차 아이콘 넣어주기
+        map[car -> now.row][car -> now.col] = USER_CAR_ICON_NUM;
+    }
+    // 시동이 꺼져있으면...
+    else {
+        // w키가 시동키
+        if (move == KEY_GO ) {
+            car -> startupYn = ON;
+            car -> kph = 0.0;
+        }
+    }
+}
+
+void movePerson(char map[ROW][COL], PersonAndCar *psn, int turn) {
+    for (int i = 0; i < 4; i++) {
+        if (turn % 10 > 5 && psn[i].crossYn == ON) {
+            continue;
+        }else if (turn % 10 != 0){
+            psn[i].crossYn = OFF;
+        }
+        map[psn[i].pos.row][psn[i].pos.col] = psn[i].beforeBlock;
+        //횡단보도 아닌곳에서 움직임 > 횡단보도 앞에서 멈춤
+        if (psn[i].moveYn == ON) {
+            if (psn[i].direction == NORTH && map[psn[i].pos.row - 1][psn[i].pos.col] != CROSSWALK_NUM) {
+                (psn[i].pos.row)--;
+                if (map[psn[i].pos.row - 1][psn[i].pos.col] == CROSSWALK_NUM) {
+                    psn[i].moveYn = OFF;
+                }
+            } else if (psn[i].direction == WEST && map[psn[i].pos.row][psn[i].pos.col - 1] != CROSSWALK_NUM) {
+                (psn[i].pos.col)--;
+                if (map[psn[i].pos.row][psn[i].pos.col - 1] == CROSSWALK_NUM) {
+                    psn[i].moveYn = OFF;
+                }
+            } else if (psn[i].direction == SOUTH && map[psn[i].pos.row + 1][psn[i].pos.col] != CROSSWALK_NUM) {
+                (psn[i].pos.row)++;
+                if (map[psn[i].pos.row + 1][psn[i].pos.col] == CROSSWALK_NUM) {
+                    psn[i].moveYn = OFF;
+                }
+            } else if (psn[i].direction == EAST && map[psn[i].pos.row][psn[i].pos.col + 1] != CROSSWALK_NUM) {
+                (psn[i].pos.col)++;
+                if (map[psn[i].pos.row][psn[i].pos.col + 1] == CROSSWALK_NUM) {
+                    psn[i].moveYn = OFF;
+                }
+            }
+        }
+        // 자동차 신호 빨강/주황색일 때 움직임
+        if (turn % 10 >= 5 && psn[i].crossYn == OFF){
+            psn[i].moveYn = ON;
+            if (psn[i].direction == NORTH) {
+                psn[i].pos.row -= 2;
+                if (map[psn[i].pos.row][psn[i].pos.col] != CROSSWALK_NUM) {
+                    psn[i].direction = SOUTH;
+                    psn[i].crossYn = ON;
+                }
+            }else if (psn[i].direction == EAST) {
+                psn[i].pos.col += 2;
+                if (map[psn[i].pos.row][psn[i].pos.col] != CROSSWALK_NUM) {
+                    psn[i].direction = WEST;
+                    psn[i].crossYn = ON;
+                }
+            }else if (psn[i].direction == SOUTH) {
+                psn[i].pos.row += 2;
+                if (map[psn[i].pos.row][psn[i].pos.col] != CROSSWALK_NUM) {
+                    psn[i].direction = NORTH;
+                    psn[i].crossYn = ON;
+                }
+            }else if (psn[i].direction == WEST) {
+                psn[i].pos.col -= 2;
+                if (map[psn[i].pos.row][psn[i].pos.col] != CROSSWALK_NUM) {
+                    psn[i].direction = EAST;
+                    psn[i].crossYn = ON;
+                }
+            }
+        }
+        psn[i].beforeBlock = map[psn[i].pos.row][psn[i].pos.col];
+        map[psn[i].pos.row][psn[i].pos.col] = PERSON_NUM;
+    }
+}
+
+void moveCar(char map[ROW][COL], PersonAndCar *car, int turn) {
+    for (int i = 0; i < 4; i++) {
+        map[car[i].pos.row][car[i].pos.col] = car[i].beforeBlock;
+
+        if (turn % 10 > 5) {
+            if (   (car[i].direction == NORTH && map[car[i].pos.row - 1][car[i].pos.col] == CROSSWALK_NUM)
+                || (car[i].direction == EAST && map[car[i].pos.row][car[i].pos.col + 1] == CROSSWALK_NUM)
+                || (car[i].direction == SOUTH && map[car[i].pos.row + 1][car[i].pos.col] == CROSSWALK_NUM)
+                || (car[i].direction == WEST && map[car[i].pos.row][car[i].pos.col - 1] == CROSSWALK_NUM) ){
+                car[i].moveYn = OFF;
+            }
+        }else {
+            car[i].moveYn = ON;
+        }
+
+        if (car[i].moveYn == ON) {
+            if (car[i].direction == NORTH) {
+                if (map[car[i].pos.row][car[i].pos.col - 1] == MAP_ICON1_NUM && car[i].crossYn == OFF) {
+                    car[i].pos.col -= 2;
+                    car[i].direction = SOUTH;
+                    car[i].crossYn = ON;
+                }else {
+                    (car[i].pos.row)--;
+                    car[i].crossYn = OFF;
+                }
+            }else if (car[i].direction == EAST) {
+                if (map[car[i].pos.row - 1][car[i].pos.col] == MAP_ICON1_NUM && car[i].crossYn == OFF) {
+                    car[i].pos.row -= 2;
+                    car[i].direction = WEST;
+                    car[i].crossYn = ON;
+                }else {
+                    (car[i].pos.col)++;
+                    car[i].crossYn = OFF;
+                }
+            }else if (car[i].direction == SOUTH) {
+                if (map[car[i].pos.row][car[i].pos.col + 1] == MAP_ICON1_NUM && car[i].crossYn == OFF) {
+                    car[i].pos.col += 2;
+                    car[i].direction = NORTH;
+                    car[i].crossYn = ON;
+                }else {
+                    (car[i].pos.row)++;
+                    car[i].crossYn = OFF;
+                }
+            }else if (car[i].direction == WEST) {
+                if (map[car[i].pos.row + 1][car[i].pos.col] == MAP_ICON1_NUM && car[i].crossYn == OFF) {
+                    car[i].pos.row += 2;
+                    car[i].direction = EAST;
+                    car[i].crossYn = ON;
+                }else {
+                    (car[i].pos.col)--;
+                    car[i].crossYn = OFF;
+                }
+            }
+        }
+        car[i].beforeBlock = map[car[i].pos.row][car[i].pos.col];
+        map[car[i].pos.row][car[i].pos.col] = CAR_NUM;
+    }
 }
 
 void checkCrosswalk(CrossWolk *cws, Car *car) {
@@ -289,18 +610,6 @@ void printMap(char map[ROW][COL], Car *car) {
     }
 }
 
-void searchCarPosition(char map[ROW][COL], Car *cptr) {
-    cptr -> now.row = 70;
-    cptr -> now.col = 82;
-
-    cptr -> before.row = 70;
-    cptr -> before.col = 82;
-
-    cptr -> beforeBlock = MAP_ICON4_NUM;
-
-    map[cptr -> now.row][cptr -> now.col] = USER_CAR_ICON_NUM;
-}
-
 void printStatus(Car car, char course) {
     printf("===================================================================================================================================================================\n");
     printf("시험을 진행할 코스는 %c 코스입니다\n", course);
@@ -315,6 +624,7 @@ void printStatus(Car car, char course) {
     printf("===================================================================================================================================================================\n");
     printf("[ 감점로그 (현재점수 : %d) ] \n", car.score);
     for (int i = 0; i < sizeof(car.failLog) / sizeof(car.failLog[0]); i++) {
+        if (car.failLog[i] == 0) { break; }
         printf("%d. ", i + 1);
         switch (car.failLog[i]) {
             case FAIL_REASON_1:
@@ -347,185 +657,6 @@ void printStatus(Car car, char course) {
             case FALL_REASON_10:
                 printf("중앙선 침범 : 실격\n");
             break;
-        }
-    }
-}
-
-void moveCar(char map[ROW][COL], Car *car) {
-    char move;
-    // 이동키 받기
-    read(0, &move, sizeof(move));
-
-    // 시동안걸려있으면 아무것도 동작안함
-    if ((car -> startupYn) == ON) {
-        // 이전위치 확인 -> 가속붙었을 때 신호위반이나 사고 확인용
-        car -> before.row = car -> now.row;
-        car -> before.col = car -> now.col;
-
-        map[car -> now.row][car -> now.col] = car -> beforeBlock;
-        if (move == KEY_GO || move == KEY_ACCEL || move == KEY_BREAK) {
-            car -> turn ++; //차가 움직일 때만 턴수 증가
-
-            if (move == KEY_ACCEL) {
-                car -> kph += 20.0;
-            }
-
-            if (move == KEY_BREAK) {
-                if (car -> kph > 0){
-                    car -> kph -= 20.0;
-                }
-            }
-
-            // 속도 20km/h당 1칸
-            if (car -> direction == WEST) {
-                car -> now.col += car -> kph / 20.0;
-            }else if (car -> direction == EAST) {
-                (car -> now.col) -=  car -> kph / 20.0;
-            }else if (car -> direction == SOUTH) {
-                (car -> now.row) += car -> kph / 20.0;
-            }else if (car -> direction == NORTH) {
-                (car -> now.row) -=  car -> kph / 20.0;
-            }
-        }else if (move == KEY_LEFT) {
-            // 좌회전하는데 깜빡이를 깜빡...^^...
-            if (car -> leftLight == OFF) {
-                car -> failLog[car -> failCnt] = FAIL_REASON_1;
-                (car -> failCnt)++;
-                car -> score -= 10;
-            }
-
-            // 아무튼 깜빡이들 끔
-            car -> leftLight = OFF;
-            car -> rightLight = OFF;
-
-            // 방향 전환
-            if (car -> direction == NORTH) {
-                car -> direction = EAST;
-            }else if (car -> direction == EAST) {
-                car -> direction = SOUTH;
-            }else if (car -> direction == SOUTH) {
-                car -> direction = WEST;
-            }else if (car -> direction == WEST) {
-                car -> direction = NORTH;
-            }
-
-        }else if (move == KEY_RIGHT) {
-            if (car -> rightLight == OFF) {
-                car -> failLog[car -> failCnt] = FAIL_REASON_2;
-                (car -> failCnt)++;
-                car -> score -= 10;
-            }
-
-            car -> leftLight = OFF;
-            car -> rightLight = OFF;
-
-            if (car -> direction == NORTH) {
-                car -> direction = WEST;
-            }else if (car -> direction == EAST) {
-                car -> direction = NORTH;
-            }else if (car -> direction == SOUTH) {
-                car -> direction = EAST;
-            }else if (car -> direction == WEST) {
-                car -> direction = SOUTH;
-            }
-        } else if (move == KEY_LEFT_LIGHT) {
-            // 왼깜빡 키면 오른깜빡 끄기
-            if (car -> rightLight == ON) {
-                car -> rightLight = OFF;
-            }
-            // 깜빡이가 켜져있으면 끄고 꺼져있으면 켜기
-            if (car -> leftLight == ON) {
-                car -> leftLight = OFF;
-            }else {
-                car -> leftLight = ON;
-            }
-        } else if (move == KEY_RIGHT_LIGHT) {
-            if (car -> leftLight == ON) {
-                car -> leftLight = OFF;
-            }
-
-            if (car -> rightLight == ON) {
-                car -> rightLight = OFF;
-            }else {
-                car -> rightLight = ON;
-            }
-        } else if (move == KEY_CHANGE_LINE_LEFT) {
-            // 차선변경 깜빡이를 깜빡쓰..
-            if (car -> leftLight == OFF) {
-                car -> failLog[car -> failCnt] = FAIL_REASON_3;
-                (car -> failCnt)++;
-                car -> score -= 10;
-            }
-
-            // 여기도 아무튼 깜빡이를 꺼줌
-            car -> leftLight = OFF;
-            car -> rightLight = OFF;
-
-            // 차가 바라보고 있는 방향별로 차선변경 동작
-            if (car -> direction == NORTH) {
-                (car -> now.col)--;
-            }else if (car -> direction == EAST) {
-                (car -> now.row)++;
-            }else if (car -> direction == SOUTH) {
-                (car -> now.col)++;
-            }else if (car -> direction == WEST) {
-                (car -> now.row)--;
-            }
-        } else if (move == KEY_CHANGE_LINE_RIGHT) {
-            if (car -> rightLight == OFF) {
-                car -> failLog[car -> failCnt] = FAIL_REASON_4;
-                (car -> failCnt)++;
-                car -> score -= 10;
-            }
-
-            car -> leftLight = OFF;
-            car -> rightLight = OFF;
-
-            if (car -> direction == NORTH) {
-                (car -> now.col)++;
-            }else if (car -> direction == EAST) {
-                (car -> now.row)--;
-            }else if (car -> direction == SOUTH) {
-                (car -> now.col)--;
-            }else if (car -> direction == WEST) {
-                (car -> now.row)++;
-            }
-        } else if (move == KEY_OFF) {
-            if ( car -> kph != 0.0) {
-                car -> failLog[car -> failCnt] = FALL_REASON_9;
-                (car -> failCnt)++;
-                car -> score -= 10;
-            }
-            car -> kph = 0.0;
-            car -> startupYn = OFF;
-        }
-
-        // 장애물 부딪히면 실격
-        if (map[car -> now.row][car -> now.col] == PERSON_NUM
-            || map[car -> now.row][car -> now.col] == CAR_NUM
-            || map[car -> now.row][car -> now.col] == MAP_ICON2_NUM
-            || map[car -> now.row][car -> now.col] == MAP_ICON3_NUM) {
-            if (map[car -> now.row][car -> now.col] == MAP_ICON3_NUM){
-                car -> failLog[car -> failCnt] = FALL_REASON_10;
-            }else {
-                car -> failLog[car -> failCnt] = FALL_REASON_8;
-            }
-
-            (car -> failCnt)++;
-            car -> score -= 50;
-        }
-
-        // 자동차 도착전 아이콘 저장
-        car -> beforeBlock = map[car -> now.row][car -> now.col];
-        // 변경된 위치값에 자동차 아이콘 넣어주기
-        map[car -> now.row][car -> now.col] = USER_CAR_ICON_NUM;
-    }
-    // 시동이 꺼져있으면...
-    else {
-        // w키가 시동키
-        if (move == KEY_GO ) {
-            car -> startupYn = ON;
-            car -> kph = 0.0;
         }
     }
 }

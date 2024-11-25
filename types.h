@@ -57,4 +57,6 @@ typedef struct {
     char direction;
     char gubun;
     char moveYn;
+    char beforeBlock;
+    char crossYn;
 } PersonAndCar;
