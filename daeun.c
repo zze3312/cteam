@@ -1,222 +1,270 @@
-#pragma warning(disable: 4996)
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<time.h>
 #include"types.h"
 
-#define FILE_LOGIN "LogInfo.txt"
-#define FILE_WRONG "WrongAnwser.txt"
-#define STRING_SIZE 1001
-#define CHAR_SIZE 20
+#define FILE_LOGIN "UserLogin.txt" // 회원정보
+#define FILE_TEST "CarTest_Questions.txt" // 문제
+#define FILE_ANSWER "CarTest_Answers.txt" // 정답
+#define FILE_WRONG "Wrong_AnswerNote.txt" // 오답노트
+#define STRING_SIZE 100 // 문자열 길이
+#define QUESTIONS_NUM 40 // 문제수
 
-void mainComment();
-void loginComment();
-void userLogin(User * sptr, int * userID, int * userPWD);
-void userJoin(User * sptr);
-void userInfoAdd(User * sptr);
-void userInfor(User * userInfor);
-void userInforFind(User * userInfor, int size);
-void userPage(User * ptr);
+
+void mainComment(); // 메인화면
+void loginComment(); // 로그인 전 메뉴
+void userLogin(char * loginID); // 로그인
+void userInfoAdd(); // 회원가입
+void userInfoFind(); // 가입내역조회
+void subComment(); // 로그인 후 메뉴
 
 int main(void)
 {
-    mainComment();
-    loginComment();
-
-    int menuNum1;
-    while(1)
-    {
-        scanf("%d", &menuNum1);        
-        switch(menuNum1) // 메인 메뉴 선택
-        {
-            case 1: // 1번 로그인
+	int mainMenuNum;
+	while(1)
+	{
+		mainComment();
+		loginComment(); 
+		printf(" 진행하실 번호를 입력해주세요: ");
+		scanf("%d", &mainMenuNum);
+		
+		switch(mainMenuNum)
+		{
+			case 1: // 로그인
                 userLogin();
-                break;
-            case 2: // 2번 회원가입
-                userInfoAdd();
-                break;
-            case 3: // 3번 가입내역조회
-                userInfor();
-                userInforFind();
-                break;
-            default:
-                break;
-        }
-    }
-
-    userPage();
-    int menuNum2;
-    while(1)
-    {
-        scanf("%d", &menuNum2);
-        switch(menuNum2) // 로그인 완료시 메뉴 선택
-        {
-            case 1: // 1번 모의 테스트
-
-                break;
-            case 2: // 2번 실전테스트(필기)
-
-                break;
-            case 3: // 3번 실기시험 - 도로주행시험
-            
-                break;
-            case 4: // 4번 시험합격여부
-
-                break;
-            case 5: // 5번 지난테스트
-
-                break;
-            case 6: // 6번 오답노트
-
-                break;
-            default:
-                break;
-        }
-    }
-    return 0;
+				// if (userLogin)
+				// {
+				// 	printf("님의 접속을 환영합니다. \n"); // loginID
+					
+					// int subMenuNum;
+					// while(1)
+					// {
+					// 	subComment();
+					// 	printf(" 진행하실 번호를 입력해주세요: ");
+					// 	scanf("%d", &subMenuNum);
+					// }
+					// if (subMenuNum == 1) // 모의테스트
+					// {
+						
+					// }
+					// else if (subMenuNum == 2) // 실전테스트(필기)
+					// {
+						
+					// }
+					// else if (subMenuNum == 3) // 실기시험 - 도로주행시험
+					// {
+						
+					// }
+					// else if (subMenuNum == 4) // 시험합격여부
+					// {
+						
+					// }
+					// elsf if (subMenuNum == 5) // 지난테스트
+					// {
+						
+					// }
+					// else if (subMenuNum == 6) // 오답노트
+					// {
+						
+					// }
+					// else if (subMenuNum == 7) // 종료
+					// {
+					// 	printf(" 브고트 운전면허 프로그램을 종료합니다. \n");
+					// 	exit(0); // 프로그램 종료
+					// }
+					// else
+					// {
+					// 	printf(" 잘못된 입력입니다. 다시 선택해주세요. \n");
+					// }
+				// }
+				// else
+				// {
+				// 	printf(" ID 또는 PWD의 정보를 잘못 입력하였습니다. 다시 입력해주세요. \n");
+				// }
+				break;
+			case 2: // 회원가입
+				userInfoAdd();
+				break;
+			case 3: // 가입내역조회
+				userInfoFind();
+				break;
+			case 4: // 종료
+				printf(" 브고트 운전면허 프로그램을 종료합니다. \n");
+				exit(0); // 프로그램 종료
+			default:
+				printf(" 잘못된 입력입니다. 다시 선택해주세요. \n");
+				break;
+		}
+	}
+	return 0;	
 }
 
-void mainComment() // main 화면 comment 출력
+void mainComment()
 {
-    printf("+-----------------------------------------------------------+ \n");
-    printf("|                  브고트 운전면허 프로그램                 |\n");
-    printf("+-----------------------------------------------------------+ \n");
+	printf("+-----------------------------------------------------------+ \n");
+	printf("|                  브고트 운전면허 프로그램                 |\n");
+	printf("+-----------------------------------------------------------+ \n");
 }
 
-void loginComment() // login 화면 comment 출력
+void loginComment()
 {
-    printf("회원이십니까? \n");
-    printf("회원이신 경우 '1'입력 : 로그인 \n");
-    printf("비회원이신 경우 '2'입력 : 회원가입 \n");
-    printf("로그인 정보를 잊어버리신 경우 '3'입력 : 가입내역 조회\n");
+	printf(" 회원이십니까? \n");
+	printf(" 1. 로그인(회원이신 경우) \n");
+	printf(" 2. 회원가입(비회원이신 경우) \n");
+	printf(" 3. 가입내역 조회(로그인 정보를 잊어버리신 경우) \n");	
+	printf(" 4. 종료 \n");
+	printf("+-----------------------------------------------------------+ \n");
 }
 
-void userLogin(User * sptr, int * userID, int * userPWD) // 사용자 입력 요청 - 로그인 : 아이디 id, 비번 pw
-{
-    printf("로그인하세요.\n");
-    fputs("ID : ", stdout); fgets(userID, sizeof(userID), stdin);
-    fputs("Password : ", stdout); fgets(userPWD, sizeof(userPWD), stdin);
+void userLogin(char * loginID) // 사용자 입력 요청 - 로그인 : 아이디 id, 비번 pw
+{	
+	char userID[STRING_SIZE];
+	char userPWD[STRING_SIZE];
+	char line[STRING_SIZE * 3];	
+	char * name;
+	char * id;
+	char * pwd;
+	
+	printf("+------------------------ 로 그 인 -------------------------+ \n");
+	fputs(" ID : \n", stdout); fgets(userID, sizeof(userID), stdin);
+    fputs(" Password : \n", stdout); fgets(userPWD, sizeof(userPWD), stdin);
 
-    if (sptr -> id == userID && sptr -> pwd == userPWD)
-    {
-        printf("로그인 중입니다.\n");
-    }
-    else if (sptr -> id != userID && sptr -> pwd != userPWD)
-    {
-        printf("정보를 잘못 입력하셨습니다.");
-        return -1;
-    }
+	FILE * fp_log = fopen(FILE_LOGIN, "rt");
+	if (fp_log == NULL)
+	{
+		printf(" 가입된 정보 내역이 없습니다. 회원가입을 진행해주세요. \n");
+		return 0;
+	}	
+
+	while(fgets(line, sizeof(line), fp_log)) // 파일 내 ID/PWD 정보 비교
+	{		
+		name = strtok(line, ","); // 데이터 구분
+		id = strtok(NULL, ",");
+		pwd = strtok(NULL, "\n");
+			
+		if (strcmp(id, userID) == 0 && strcmp(pwd, userPWD) == 0)
+		{
+			fclose(fp_log);
+			return 1; // 로그인 성공
+		}
+	}
+	fclose(fp_log);
+	return 0; // 로그인 실패
 }
 
-void userJoin(User * sptr) // 사용자 입력 요청 - 회원가입: 이름 name, 생년월일 birth, 전화번호 tel, 아이디 id, 비번 pwd
+void userInfoAdd()
 {
-    printf("학생 이름 : %s \n", sptr -> name);
-    printf("생년월일 : %s \n", sptr -> birth);
-    printf("전화번호 : %s \n", sptr -> tel);
-    printf("ID : %s \n", sptr -> id);
-    printf("Password : %s \n", sptr -> pwd);
-}
-
-void userInfoAdd(User * sptr) // 회원가입 진행
-{
-    FILE * fp = fopen(FILE_LOGIN, "a+t"); 
-    if(fp == NULL)    
-    {
-        puts("파일 열기에 실패하였습니다.");
-        return -1;
-    }
-
-    User person1;
-    printf("회원가입을 위해 아래의 정보를 입력해주세요.\n");
-    fputs("1.이름 : ", stdout); fgets(person1.name, sizeof(person1.name), stdin);
-    fputs("2.생년월일(yymmdd) : ", stdout); fgets(person1.birth, sizeof(person1.birth), stdin);
-    fputs("3.휴대폰번호 : ", stdout); fgets(person1.tel, sizeof(person1.tel), stdin);
-    fputs("4.ID : ", stdout); fgets(person1.id, sizeof(person1.id), stdin);
-    fputs("5.Password : ", stdout); fgets(person1.pwd, sizeof(person1.pwd), stdin);
-    fprintf(fp, "%s %s %s %s %s", person1.name, person1.birth, person1.tel, person1.id, person1.pwd);
+	FILE * fp = fopen(FILE_LOGIN, "a+t");
+	if (fp == NULL)
+	{
+		printf(" 파일을 불러올 수 없습니다. \n");
+		return;
+	}
+	User person; // 구조체 호출
+	printf("+----------------------- 회 원 가 입 -----------------------+ \n");
+	printf(" 회원가입을 위해 아래의 정보를 입력해주세요. \n");
+    fputs(" 1.이름 : ", stdout); fgets(person.name, sizeof(person.name), stdin);
+    fputs(" 2.생년월일(yymmdd) : ", stdout); fgets(person.birth, sizeof(person.birth), stdin);
+    fputs(" 3.휴대폰번호 : ", stdout); fgets(person.tel, sizeof(person.tel), stdin);
+    fputs(" 4.ID : ", stdout); fgets(person.id, sizeof(person.id), stdin);
+    fputs(" 5.Password : ", stdout); fgets(person.pwd, sizeof(person.pwd), stdin);
+    
+	fprintf(fp, "%s, %s, %s, %s, %s \n", person.name, person.birth, person.tel, person.id, person.pwd);
     fclose(fp);
+	
+	printf(" 회원가입이 완료되었습니다. 가입을 축하드립니다. \n");
 }
 
-void userInfor(User * userInfor) // 가입여부조회
+void userInfoFind()
 {
-    User userInfor[CHAR_SIZE];
-    FILE * fp = fopen(FILE_LOGIN, "rt");
-    if (fp == NULL)
-    {
-        printf("가입된 내역이 없습니다. 회원가입을 진행해주세요.\n");
-        return 0;
-    }
-    char buffer[STRING_SIZE], *token;
-    int i, idx = 0;
-    
-    while(!feof(fp))
-    {
-        i = 0;
-        fgets(buffer, STRING_SIZE, fp);
-        token = strtok(buffer, " ");
-        while(token != NULL)
-        {
-            if(i == 0)
-            {
-                strcpy(userInfor[idx].name, token);
-            }
-            else if(i == 1)
-            {
-                strcpy(userInfor[idx].id, token);
-                strcpy(userInfor[idx].pwd, token);
-            }
-            i++;
-            token = strtok(NULL, " ");
-        }
-        idx++;
-    }
-    for (int i = 0; i < idx; i++)
-    {
-        printf("%s %s %s \n", userInfor[i].name, userInfor[i].id, userInfor[i].pwd);
-    }
-    fclose(fp);
+	char userfind[STRING_SIZE];
+	char line[STRING_SIZE * 3];
+	char * name;
+	char * birth;
+	char * tel;
+	char * id;
+	char * pwd;
+	int found = 0;
+
+	printf("+-----------------------------------------------------------+ \n");
+	printf("+-------------------- 가 입 내 역 조 회 --------------------+ \n");
+	printf(" 회원정보에 등록된 이름 또는 생년월일을 입력해주세요. \n");
+	printf(" 이름/생년월일 : ");
+	scanf("%s", userfind);
+	
+	FILE * fp = fopen(FILE_LOGIN, "rt");
+	if (fp == NULL)
+	{
+		printf(" 가입된 내역이 없습니다. 회원가입을 진행해주세요. \n");
+		return;
+	}
+	
+	while (fgets(line, sizeof(line), fp))
+	{
+		name = strtok(line, ",");
+		birth = strtok(NULL, ",");
+		tel = strtok(NULL, ",");
+		id = strtok(NULL, ",");
+		pwd = strtok(NULL, "\n");
+		
+		if (strcmp(name, userfind) == 0 || strcmp(birth, userfind) == 0)
+		{
+			printf("+------------------- 사용자의 가입 정보 --------------------+ \n");
+			printf(" 이름 : %s \n", name);
+			printf(" 생년월일 : %s \n", birth);
+			printf(" 휴대폰번호 : %s \n", tel);
+			printf(" ID : %s \n", id);	
+			printf(" PWD : %s \n", pwd);
+			found = 1;
+			break;
+		}
+	}
+	if (!found)
+	{
+		printf(" 해당 정보로 가입된 사용자를 찾을 수 없습니다. \n");
+	}
+	fclose(fp);
 }
 
-void userInforFind(User * userInfor, int size) // 가입내역조회 출력
-{
-    printf("이름을 입력해주세요: ");
-    char find_name[CHAR_SIZE];
-    scanf("%s %s", find_name);
-    char * ptr;
-    User * u;
-    int line = 0;
-    
-    for (u = userInfor; u < userInfor + size; u++, line++)
-    {
-        ptr = strstr(u -> name, find_name);
-        if (ptr != NULL)
-        {
-            printf("%s 님의 ID는 [ %s ]이며, 비밀번호는 [ %s ]입니다. \n", u -> name, u -> id, u -> pwd);
-        }
-        else
-        {
-            printf("가입된 내역이 없습니다. 회원가입을 진행해주세요.\n");
-        }
-    }
-}
+// void subComment()
+// {
+// 	printf("+--------------------- 사 용 자 메 뉴 ----------------------+ \n");
+// 	printf(" 1. 모의테스트 \n");
+// 	printf(" 2. 실전테스트(필기) \n");
+// 	printf(" 3. 실기시험 - 도로주행시험 \n");	
+// 	printf(" 4. 시험합격여부 \n");
+// 	printf(" 5. 지난테스트 \n");
+// 	printf(" 6. 오답노트 \n");
+// 	printf(" 7. 종료 \n");
+// 	printf("+-----------------------------------------------------------+ \n");
+// }
 
-void userPage(User * ptr) // 로그인 완료시 메뉴 선택
-{
-    User person1;
-    printf("%s님의 접속을 환영합니다.\n", person1.name);
-    printf("'1'입력 : 모의테스트         '2'입력 : 실전테스트(필기) \n");
-    printf("'3'입력 : 도로주행시험       '4'입력 : 시험합격여부\n");
-    printf("'5'입력 : 지난테스트         '6'입력 : 오답노트");
-}
-
-// 필기/실기 시험합격여부 조회 (진행날짜, 점수, 합격여부)
-
-// 지난테스트 선택시 (시험진행회차, 점수, 진행시간, 합격여부)
-
-// 오답노트 선택시 지금까지 풀었던 문제 중 틀린 것들 출력
-void WrongAnwser()
-{
-    FILE * fp = fopen(FILE_WRONG, "wt");
-    
-}
-
+// void mcokTest(Question * Questions)
+// {
+// 	char line[STRING_SIZE * 3];
+// 	int * questionNumber;
+// //	char * answer1;
+// //	char * answer2;
+// //	char * answer3;
+// //	char * answer4;
+// 	char * correct;
+// 	int score, totalQuestion = 0;
+// 	int userCorrect;
+	
+// 	FILE * fp_test = fopen(FILE_TEST, "rt");
+// 	FILE * fp_answer = fopen(FILE_ANSWER, "rt");
+// 	if (fp_test == NULL || fp_answer == NULL)
+// 	{
+// 		printf(" 파일을 불러올 수 없습니다. \n");
+// 		return 0;
+// 	}
+	
+// 	printf("+--------------------- 모의테스트 시작 ---------------------+ \n");
+// 	while(fgets(line, sizeof(line), fp))
+// 	{
+		
+// 		totalQuestion++;
+		
+// 	}
+// }
