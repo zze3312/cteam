@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "header/types.h"
+#include "/home/lms/CLionProjects/cteam/header/types.h"
 
-#define DATA_FILE "dataFile/test.csv"
+#define FILE_DATA "dataFile/test.csv"
+#define FILE_WRONG "dataFile/WrongAnswerNote.txt" // 오답노트
 
 void selQuestion(char num[], Question *qst);
 void main() {
@@ -26,16 +27,26 @@ void main() {
     }
 
     if (passYn == 'Y') printf("정답!\n");
-    else printf("오답!\n");
+    else {
+        printf("오답!\n");
+        FILE *fp = fopen(FILE_WRONG, "wt");
+        //23,2,4,jh123,24.11.26
+
+        //fprintf(fp, "%s,%s,%s\n", qst.questionNumber, qst.correct, result, );
+    }
 }
 
 void selQuestion(char num[], Question *qst) {
     char line[1000];
-    Question question = {.questionNumber = "", .question = "", .answer1 = "", .answer2 = "", .answer3 = "", .answer4 = "", .correct = ""};
+    Question question = {.questionNumber = "", .correct = ""};
     int i = 0;
 
-    FILE *fp = fopen(DATA_FILE, "rt");
+    FILE *fp = fopen(FILE_DATA, "rt");
     while(fgets(line, sizeof(line), fp)) {
+
+        if (strcmp(question.questionNumber, num) == 0) {
+            break;
+        }
 
         char token = 'F';
         for (int j = 0; j < strlen(line); j++) {
@@ -45,17 +56,21 @@ void selQuestion(char num[], Question *qst) {
             }
         }
         if (token == 'F'){
-            strcpy(question.questionNumber,strtok(line, "."));
-            strcpy(question.question, strtok(NULL, ","));
-            strcpy(question.answer1, strtok(NULL, ","));
-            strcpy(question.answer2, strtok(NULL, ","));
-            strcpy(question.answer3, strtok(NULL, ","));
-            strcpy(question.answer4, strtok(NULL, ","));
-            strcpy(question.correct, strtok(NULL, "\n\r"));
+            strcpy(question.questionNumber,strtok(line, ".")); //문제번호
+
+            if (strcmp(question.questionNumber, num) == 0){
+                printf("%s. ", question.questionNumber);
+                printf("%s\n", strtok(NULL, ","));//문제
+                printf("%s\n", strtok(NULL, ","));//1문항
+                printf("%s\n", strtok(NULL, ","));//2문항
+                printf("%s\n", strtok(NULL, ","));//3문항
+                printf("%s\n", strtok(NULL, ","));//4문항
+                //printf("%s\n", strtok(NULL, "\n\r"));//답
+            }
+            strcpy(question.correct, strtok(line, "."));
             i++;
         } else {
             int cnt = 0;
-            int idx = 0;
             int gubun = 0;
             char splitYn = 'N';
             char buffer[500] = "";
@@ -72,7 +87,6 @@ void selQuestion(char num[], Question *qst) {
                     strcpy(temp, strtok(NULL, " "));
                 }
 
-                idx += strlen(temp) - 1;
                 strcat(buffer, temp);
                 strcat(buffer, " ");
 
@@ -89,44 +103,22 @@ void selQuestion(char num[], Question *qst) {
                         break;
                     }
                 }
-                idx++;
                 if (splitYn == 'Y') {
-
                     if (gubun == 0) {
-                        gubun++;
                         strcpy(strstr(buffer, "."),"");
                         strcpy(question.questionNumber, buffer);
-                        strcpy(buffer, "");
-                    }else if (gubun == 1) {
-                        gubun++;
-                        strcpy(question.question, buffer);
-                        strcpy(buffer, "");
-                    }else if (gubun == 2) {
-                        gubun++;
-                        strcpy(question.answer1, buffer);
-                        strcpy(buffer, "");
-                    }else if (gubun == 3) {
-                        gubun++;
-                        strcpy(question.answer2, buffer);
-                        strcpy(buffer, "");
-                    }else if (gubun == 4) {
-                        gubun++;
-                        strcpy(question.answer3, buffer);
-                        strcpy(buffer, "");
-                    }else if (gubun == 5) {
-                        gubun++;
-                        strcpy(question.answer4, buffer);
-                        strcpy(buffer, "");
+                        printf("%s. ", question.questionNumber);
                     }else if (gubun == 6) {
-                        gubun++;
                         strcpy(question.correct, buffer);
-                        strcpy(buffer, "");
-                        idx = 0;
                     }
-                }
 
-                if (cnt == 2) {
-                    cnt = 0;
+                    gubun++;
+
+                    if (gubun != 1 && gubun != 7 && strcmp(question.questionNumber, num) == 0) {
+                        printf("%s\n", buffer);
+                    }
+
+                    strcpy(buffer, "");
                 }
 
                 if (gubun == 7) {
@@ -136,26 +128,12 @@ void selQuestion(char num[], Question *qst) {
                 }
             }
         }
-        if (strcmp(question.questionNumber, num) == 0) {
-            break;
-        }
+
     }
     fclose(fp);
 
     strcpy(qst->questionNumber, question.questionNumber);
-    strcpy(qst->question, question.question);
-    strcpy(qst->answer1, question.answer1);
-    strcpy(qst->answer2, question.answer2);
-    strcpy(qst->answer3, question.answer3);
-    strcpy(qst->answer4, question.answer4);
     strcpy(qst->correct, question.correct);
 
-    printf("%s :", qst -> questionNumber);
-    printf("%s\n", qst -> question);
-    printf("%s\n", qst -> answer1);
-    printf("%s\n", qst -> answer2);
-    printf("%s\n", qst -> answer3);
-    printf("%s\n", qst -> answer4);
-    printf("답 : %s\n", qst -> correct);
     printf("\n");
 }

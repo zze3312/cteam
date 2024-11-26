@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "header/types.h"
+#include "/home/lms/CLionProjects/cteam/header/types.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
@@ -52,7 +52,7 @@ enum failReason {
     FALL_REASON_9 = 9, // 감속없이 시동 끄기
     FALL_REASON_10 = 10, // 중앙선 침범
 };
-#define MAP_FILE "dataFile/map.txt"
+#define FILE_MAP "dataFile/map.txt"
 
 #define COL 101
 #define ROW 100
@@ -143,7 +143,7 @@ void main() {
 }
 
 void setMap(char map[ROW][COL]) {
-    FILE *fp = fopen(MAP_FILE, "rt");
+    FILE *fp = fopen(FILE_MAP, "rt");
 
     if (fp == NULL) {
         printf("파일에 문제가 있습니다.\n");

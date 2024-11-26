@@ -5,11 +5,6 @@ typedef struct{
 
 typedef struct{
     char questionNumber[5];
-    char question[500];
-    char answer1[200];
-    char answer2[200];
-    char answer3[200];
-    char answer4[200];
     char correct[50];
 } Question;
 
