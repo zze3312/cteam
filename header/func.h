@@ -146,7 +146,14 @@ void userInfoAdd()
 			fprintf(fp, "%s,%s,%s,%s,%s\n", userInput.name, userInput.birth, userInput.tel, userInput.id, userInput.pwd);
 			printf(" %s님 회원가입이 완료되었습니다. 가입을 축하드립니다.\n", userInput.name);
 
+            char filename[100] = "";
+            strcat(filename, "/home/lms/CLionProjects/cteam/dataFile/");
+            strcat(filename, userInput.id);
+            mkdir(filename, 0777);
+
 			fclose(fp);
+
+
 			break;
 		}
 	}
@@ -1082,11 +1089,19 @@ void mockTest(User *loginUser) {
         else {
             char date[30];
             printf("오답!\n");
-            sprintf(date, "%d.%d.%d %d:%d",  tm.tm_year - 100, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min);
+            sprintf(date, "_%d%d%d_%d%d",  tm.tm_year - 100, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min);
+			char fileName[100] = "";
+            strcat(fileName, "/home/lms/CLionProjects/cteam/dataFile/");
+            strcat(fileName, loginUser -> id);
+            strcat(fileName, "/");
 
-            FILE *fp = fopen(FILE_WRONG, "at");
-			//문제번호,날짜,제출자,사용여부
-            fprintf(fp, "%s,%s,%s,Y\n", qst.questionNumber, date, loginUser -> id);
+            strcat(fileName, "WrongNote");
+            strcat(fileName, date);
+            strcat(fileName, ".txt");
+
+            FILE *fp = fopen(fileName, "at");
+			//문제번호,사용여부
+            fprintf(fp, "%s,Y\n", qst.questionNumber);
             fclose(fp);
         }
     }

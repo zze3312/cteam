@@ -6,6 +6,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <termios.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 
 //#include "../header/types.h"
 //#define FILE_DATA "../dataFile/test.csv"
@@ -16,7 +19,7 @@
 #include "/home/lms/CLionProjects/cteam/header/types.h"
 #define FILE_DATA "/home/lms/CLionProjects/cteam/dataFile/test.csv"
 #define FILE_LOGIN "/home/lms/CLionProjects/cteam/dataFile/UserLogin.txt" // 회원정보
-#define FILE_WRONG "/home/lms/CLionProjects/cteam/dataFile/WrongAnswerNote.txt" // 오답노트
+#define FILE_WRONG "/home/lms/CLionProjects/cteam/dataFile/WrongNote" // 오답노트
 #define FILE_MAP "/home/lms/CLionProjects/cteam/dataFile/map.txt"
 
 #define STRING_SIZE 100 // 문자열 길이

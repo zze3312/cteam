@@ -9,9 +9,8 @@ typedef struct{
 } Question;
 
 typedef struct{
-    char userId[20];
-    char useYn[2];
-    char date[30];
+    char fileName[30];
+    char useYn;
     Question question;
 } Result;
 
