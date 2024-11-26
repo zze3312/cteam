@@ -33,7 +33,7 @@ int main(void)
 		mainComment();
 		printf(" 진행하실 번호를 입력해주세요: ");
 		scanf("%d", &mainMenuNum);
-
+		
 		switch(mainMenuNum)
 		{
 			case 1: // 로그인
@@ -118,7 +118,7 @@ void userLogin(User *loginUser) // 사용자 입력 요청 - 로그인 : 아이�
 			strcpy(loginUser -> id, tempUser.id);
 			strcpy(loginUser -> pwd, tempUser.pwd);
 
-			printf("%s : 로그인에 성공하셨습니다\n", loginUser -> id);
+			printf(" %s : 로그인에 성공하셨습니다\n", loginUser -> id);
             break;
 		}
 	}
@@ -172,7 +172,7 @@ void userInfoAdd()
 
 		if (flag == 'N') 
 		{
-			printf("이미 가입된 정보입니다.\n 다시 입력해 주세요.\n 뒤로 가시려면 q를 입력하세요 : ");
+			printf(" 이미 가입된 정보입니다.\n 다시 입력해 주세요.\n 뒤로 가시려면 q를 입력하세요 : ");
 			scanf("%c",&quit);
 		} 
 		else 
@@ -243,7 +243,7 @@ void userInfoFind()
 
 void subComment(char userId[])
 {
-	printf("현재 로그인된 아이디 : %s\n", userId);
+	printf(" 현재 로그인된 아이디 : %s\n", userId);
 	printf("+--------------------- 사 용 자 메 뉴 ----------------------+\n");
 	printf(" 1. 모의테스트\n");
 	printf(" 2. 실전테스트(필기)\n");
