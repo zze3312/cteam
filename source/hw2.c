@@ -1,13 +1,20 @@
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+
+// #include "../header/types.h"
+// #define FILE_DATA "../dataFile/test.csv"
+// #define FILE_WRONG "../dataFile/WrongAnswerNote.txt" // 오답노트
 
 #include "/home/lms/CLionProjects/cteam/header/types.h"
-
-#define FILE_DATA "dataFile/test.csv"
-#define FILE_WRONG "dataFile/WrongAnswerNote.txt" // 오답노트
+#define FILE_DATA "/home/lms/CLionProjects/cteam/dataFile/test.csv"
+#define FILE_WRONG "/home/lms/CLionProjects/cteam/dataFile/WrongAnswerNote.txt" // 오답노트
 
 void selQuestion(char num[], Question *qst);
 void main() {
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+
     char selNum[5];
     printf("출력할 문제번호를 작성해주세요 : ");
     scanf("%s", selNum);
@@ -28,11 +35,14 @@ void main() {
 
     if (passYn == 'Y') printf("정답!\n");
     else {
+        char buffer[15];
         printf("오답!\n");
+        sprintf(buffer, "%d.%d.%d",  tm.tm_year - 100, tm.tm_mon + 1, tm.tm_mday);
+
         FILE *fp = fopen(FILE_WRONG, "wt");
         //23,2,4,jh123,24.11.26
 
-        //fprintf(fp, "%s,%s,%s\n", qst.questionNumber, qst.correct, result, );
+        fprintf(fp, "%s,%s,%s,%s\n", qst.questionNumber, qst.correct, result, buffer);
     }
 }
 

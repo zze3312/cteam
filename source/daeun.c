@@ -3,77 +3,40 @@
 #include<string.h>
 #include<time.h>
 #include<unistd.h>
-#include"../header/types.h"
-#define FILE_LOGIN "../dataFile/UserLogin.txt" // 회원정보
-#define FILE_WRONG "../dataFile/WrongAnswerNote.txt" // 오답노트
+//#include"../header/types.h"
+//#define FILE_LOGIN "../dataFile/UserLogin.txt" // 회원정보
+//#define FILE_WRONG "../dataFile/WrongAnswerNote.txt" // 오답노트
 
-//#include"/home/lms/CLionProjects/cteam/header/types.h"
-//#define FILE_LOGIN "/home/lms/CLionProjects/cteam/dataFile/UserLogin.txt" // 회원정보
-//#define FILE_WRONG "/home/lms/CLionProjects/cteam/dataFile/WrongAnswerNote.txt" // 오답노트
+#include"/home/lms/CLionProjects/cteam/header/types.h"
+#define FILE_LOGIN "/home/lms/CLionProjects/cteam/dataFile/UserLogin.txt" // 회원정보
+#define FILE_WRONG "/home/lms/CLionProjects/cteam/dataFile/WrongAnswerNote.txt" // 오답노트
 
 #define STRING_SIZE 100 // 문자열 길이
 #define USER_SIZE 20 // 문자 길이
 #define QUESTIONS_NUM 40 // 문제수
 
 
-void mainComment(); // 메인화면
+void mainMenu(User *);
 void userLogin(User *); // 로그인
 void userInfoAdd(); // 회원가입
 void userInfoFind(); // 가입내역조회
-void subComment(); // 로그인 후 메뉴
 int subMenu(User *); // 메뉴 선택
 void clearBuffer(); // 입력값 비우기
 
 int main(void)
 {
-	int mainMenuNum;
+
 	User loginUser;
 	while(1)
 	{
-		mainComment();
-		printf(" 진행하실 번호를 입력해주세요: ");
-		scanf("%d", &mainMenuNum);
-		
-		switch(mainMenuNum)
-		{
-			case 1: // 로그인
-				system("clear");
-                userLogin(&loginUser);
-				if (strlen(loginUser.id) != 0) 
-				{
-					printf(" %s님의 접속을 환영합니다.\n", loginUser.id);
-					sleep(1);
-					system("clear");
-					int result = subMenu(&loginUser);
-					if (result == 0) 
-					{
-						break;
-					}
-				}
-				else
-				{
-					printf(" 가입되지 않은 정보입니다.\n");
-				}
-				break;
-			case 2: // 회원가입
-				userInfoAdd();
-				break;
-			case 3: // 가입내역조회
-				userInfoFind();
-				break;
-			case 4: // 종료
-				printf(" 브고트 운전면허 프로그램을 종료합니다.\n");
-				exit(0); // 프로그램 종료
-			default:
-				printf(" 잘못된 입력입니다. 다시 선택해주세요.\n");
-				break;
-		}
+		mainMenu(&loginUser);
 	}
-	return 0;	
+	return 0;
 }
 
-void mainComment()
+void mainMenu(User *loginUser)
 {
+	int mainMenuNum;
 	printf("+-----------------------------------------------------------+\n");
 	printf("|                  브고트 운전면허 프로그램                 |\n");
 	printf("+-----------------------------------------------------------+\n");
@@ -82,6 +45,43 @@ void mainComment()
 	printf(" 3. 아이디/비밀번호 찾기\n");
 	printf(" 4. 종료\n");
 	printf("+-----------------------------------------------------------+\n");
+	printf(" 진행하실 번호를 입력해주세요: ");
+	scanf("%d", &mainMenuNum);
+
+	switch(mainMenuNum)
+	{
+		case 1: // 로그인
+			system("clear");
+		userLogin(loginUser);
+		if (strlen(loginUser -> id) != 0)
+		{
+			printf(" %s님의 접속을 환영합니다.\n", loginUser -> id);
+			sleep(1);
+			system("clear");
+			int result = subMenu(loginUser);
+			if (result == 0)
+			{
+				break;
+			}
+		}
+		else
+		{
+			printf(" 가입되지 않은 정보입니다.\n");
+		}
+		break;
+		case 2: // 회원가입
+			userInfoAdd();
+		break;
+		case 3: // 가입내역조회
+			userInfoFind();
+		break;
+		case 4: // 종료
+			printf(" 브고트 운전면허 프로그램을 종료합니다.\n");
+		exit(0); // 프로그램 종료
+		default:
+			printf(" 잘못된 입력입니다. 다시 선택해주세요.\n");
+		break;
+	}
 }
 
 void userLogin(User *loginUser) // 사용자 입력 요청 - 로그인 : 아이디 id, 비번 pw
@@ -90,7 +90,7 @@ void userLogin(User *loginUser) // 사용자 입력 요청 - 로그인 : 아이�
 	char userPwd[USER_SIZE];
 	char line[STRING_SIZE];
 	User tempUser;
-	
+
 	printf("+------------------------ 로 그 인 -------------------------+\n"); clearBuffer();
 	fputs(" ID : ", stdout); fgets(userId, sizeof(userId), stdin);
 	strcpy(strstr(userId, "\n"),"\0");
@@ -102,7 +102,7 @@ void userLogin(User *loginUser) // 사용자 입력 요청 - 로그인 : 아이�
 	{
 		printf(" 회원정보 파일이 없습니다. 관리자에게 문의해주세요.\n");
 	}
-	while(fgets(line, sizeof(line), fp)) 
+	while(fgets(line, sizeof(line), fp))
 	{
 		strcpy(tempUser.name, strtok(line, ",")); // 데이터 구분
 		strcpy(tempUser.birth, strtok(NULL, ","));
@@ -154,7 +154,7 @@ void userInfoAdd()
 		strcpy(strstr(userInput.pwd, "\n"),"\0");
 
 		FILE * fp = fopen(FILE_LOGIN, "rt");
-		while (fgets(line, sizeof(line), fp)) 
+		while (fgets(line, sizeof(line), fp))
 		{
 			strcpy(tempUser.name,strtok(line, ","));
 			strcpy(tempUser.birth, strtok(NULL, ","));
@@ -170,12 +170,12 @@ void userInfoAdd()
 		}
 		fclose(fp);
 
-		if (flag == 'N') 
+		if (flag == 'N')
 		{
 			printf(" 이미 가입된 정보입니다.\n 다시 입력해 주세요.\n 뒤로 가시려면 q를 입력하세요 : ");
 			scanf("%c",&quit);
-		} 
-		else 
+		}
+		else
 		{
 			fp = fopen(FILE_LOGIN, "at");
 			if (fp == NULL)
@@ -214,7 +214,7 @@ void userInfoFind()
 		printf(" 가입된 내역이 없습니다. 회원가입을 진행해주세요.\n");
 		return;
 	}
-	
+
 	while (fgets(line, sizeof(line), fp))
 	{
 		strcpy(userInfo.name,strtok(line, ","));
@@ -222,7 +222,7 @@ void userInfoFind()
 		strcpy(userInfo.tel, strtok(NULL, ","));
 		strcpy(userInfo.id, strtok(NULL, ","));
 		strcpy(userInfo.pwd, strtok(NULL, "\n"));
-		
+
 		if (strcmp(userInfo.name, userName) == 0 && strcmp(userInfo.tel, userTel) == 0)
 		{
 			printf("+------------------- 회원 가입 정보 --------------------+\n");
@@ -241,22 +241,20 @@ void userInfoFind()
 	fclose(fp);
 }
 
-void subComment(char userId[])
+int subMenu(User *loginUser)
 {
-	printf(" 현재 로그인된 아이디 : %s\n", userId);
+
+	printf(" 현재 로그인된 아이디 : %s\n", loginUser -> id);
 	printf("+--------------------- 사 용 자 메 뉴 ----------------------+\n");
 	printf(" 1. 모의테스트\n");
 	printf(" 2. 실전테스트(필기)\n");
-	printf(" 3. 실기시험 - 도로주행시험\n");	
+	printf(" 3. 실기시험 - 도로주행시험\n");
 	printf(" 4. 시험합격여부\n");
 	printf(" 5. 오답노트\n");
 	printf(" 6. 로그아웃\n");
 	printf("+-----------------------------------------------------------+\n");
-}
 
-int subMenu(User *loginUser)
-{
-	if (strlen(loginUser -> id) == 0) 
+	if (strlen(loginUser -> id) == 0)
 	{
 		printf(" 로그인된 정보가 없습니다.\n");
 		sleep(1);
@@ -265,7 +263,6 @@ int subMenu(User *loginUser)
 
 	while(1)
 	{
-		subComment(loginUser->id);
 		printf(" 진행하실 번호를 입력해주세요: ");
 
 		int subMenuNum;
