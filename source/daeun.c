@@ -5,8 +5,8 @@
 #include<unistd.h>
 #include"../header/types.h"
 
-#define FILE_LOGIN "/home/lms/CLionProjects/cteam/dataFile/UserLogin.txt" // 회원정보
-#define FILE_WRONG "/home/lms/CLionProjects/cteam/dataFile/WrongAnswerNote.txt" // 오답노트
+#define FILE_LOGIN "../dataFile/UserLogin.txt" // 회원정보
+#define FILE_WRONG "../dataFile/WrongAnswerNote.txt" // 오답노트
 
 #define STRING_SIZE 100 // 문자열 길이
 #define USER_SIZE 20 // 문자 길이
@@ -199,11 +199,11 @@ void userInfoFind()
 
 	clearBuffer();
 	printf("+------------------- 아이디/비밀번호 찾기 --------------------+\n");
-	printf(" 가입하신 이름과 생년월일을 입력해주세요.\n");
+	printf(" 가입하신 이름과 휴대폰번호를 입력해주세요.\n");
 	fputs(" 이름 : ", stdout); fgets(userName, sizeof(userName), stdin);
 	strcpy(strstr(userName, "\n"),"\0");
 
-	fputs(" 연락처 : ", stdout); fgets(userTel, sizeof(userTel), stdin);
+	fputs(" 휴대폰번호 : ", stdout); fgets(userTel, sizeof(userTel), stdin);
 	strcpy(strstr(userTel, "\n"),"\0");
 	FILE * fp = fopen(FILE_LOGIN, "rt");
 	if (fp == NULL)
@@ -246,9 +246,8 @@ void subComment(char userId[])
 	printf(" 2. 실전테스트(필기)\n");
 	printf(" 3. 실기시험 - 도로주행시험\n");	
 	printf(" 4. 시험합격여부\n");
-	printf(" 5. 지난테스트\n");
-	printf(" 6. 오답노트\n");
-	printf(" 7. 로그아웃\n");
+	printf(" 5. 오답노트\n");
+	printf(" 6. 로그아웃\n");
 	printf("+-----------------------------------------------------------+\n");
 }
 
@@ -286,15 +285,11 @@ int subMenu(User *loginUser)
 		{
 			printf(" 시험합격여부 실행\n");
 		}
-		else if (subMenuNum == 5) // 지난테스트
-		{
-			printf(" 지난테스트 실행\n");
-		}
-		else if (subMenuNum == 6) // 오답노트
+		else if (subMenuNum == 5) // 오답노트
 		{
 			printf(" 오답노트 실행\n");
 		}
-		else if (subMenuNum == 7) // 로그아웃
+		else if (subMenuNum == 6) // 로그아웃
 		{
 			strcpy(loginUser -> name, "\0");
 			strcpy(loginUser -> birth, "\0");
@@ -316,23 +311,3 @@ void clearBuffer()
 {
     while (getchar() != '\n');
 }
-
-// void wrongAnswer()
-// {
-//     FILE * fp_wrong = fopen(FILE_WRONG, "rt");
-// }
-
-// void mockTestResult()
-// {
-// 	printf("	회차 		날짜		시간		점수		합격여부	");
-// 	printf("	%d			%s			%d			%d			 %s	      ", count, daytime, TestTime, score, TestResult);
-
-
-// }
-
-// void realTestResult()
-// {
-// 	printf("	 		날짜		시간		점수		합격여부	");
-// 	printf("	%d			%s			%d			%d			 %s	      ", count, daytime, TestTime, score, TestResult);
-
-// }
