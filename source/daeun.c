@@ -3,12 +3,10 @@
 #include<string.h>
 #include<time.h>
 #include<unistd.h>
-#include"types.h"
+#include"header/types.h"
 
-#define FILE_LOGIN "UserLogin.txt" // 회원정보
-#define FILE_TEST "CarTest_Questions.txt" // 문제
-#define FILE_ANSWER "CarTest_Answers.txt" // 정답
-#define FILE_WRONG "Wrong_AnswerNote.txt" // 오답노트
+#define FILE_LOGIN "dataFile/UserLogin.txt" // 회원정보
+#define FILE_WRONG "dataFile/WrongAnswerNote.txt" // 오답노트
 
 #define STRING_SIZE 100 // 문자열 길이
 #define USER_SIZE 20 // 문자 길이

@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "types.h"
+#include "header/types.h"
+
+#define DATA_FILE "dataFile/test.csv"
+
 void selQuestion(char num[], Question *qst);
 void main() {
     char selNum[5];
@@ -31,7 +34,7 @@ void selQuestion(char num[], Question *qst) {
     Question question = {.questionNumber = "", .question = "", .answer1 = "", .answer2 = "", .answer3 = "", .answer4 = "", .correct = ""};
     int i = 0;
 
-    FILE *fp = fopen("test.csv", "rt");
+    FILE *fp = fopen(DATA_FILE, "rt");
     while(fgets(line, sizeof(line), fp)) {
 
         char token = 'F';
