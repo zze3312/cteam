@@ -3,7 +3,7 @@
 #include<string.h>
 #include<time.h>
 #include<unistd.h>
-#include"/home/lms/CLionProjects/cteam/header/types.h"
+#include"../header/types.h"
 
 #define FILE_LOGIN "/home/lms/CLionProjects/cteam/dataFile/UserLogin.txt" // 회원정보
 #define FILE_WRONG "/home/lms/CLionProjects/cteam/dataFile/WrongAnswerNote.txt" // 오답노트
