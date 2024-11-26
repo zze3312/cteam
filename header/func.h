@@ -16,22 +16,18 @@ void mainMenu(User *loginUser)
 	{
 		case 1: // 로그인
 			system("clear");
-		userLogin(loginUser);
-		if (strlen(loginUser -> id) != 0)
-		{
-			printf(" %s님의 접속을 환영합니다.\n", loginUser -> id);
-			sleep(1);
-			system("clear");
-			int result = subMenu(loginUser);
-			if (result == 0)
-			{
-				break;
-			}
-		}
-		else
-		{
-			printf(" 가입되지 않은 정보입니다.\n");
-		}
+		    userLogin(loginUser);
+		    if (strlen(loginUser -> id) != 0)
+		    {
+			    printf(" %s님의 접속을 환영합니다.\n", loginUser -> id);
+			    sleep(1);
+			    system("clear");
+			    subMenu(loginUser);
+		    }
+		    else
+		    {
+			    printf(" 가입되지 않은 정보입니다.\n");
+		    }
 		break;
 		case 2: // 회원가입
 			userInfoAdd();
@@ -207,7 +203,7 @@ void userInfoFind()
 
 int subMenu(User *loginUser)
 {
-
+    system("clear");
 	printf(" 현재 로그인된 아이디 : %s\n", loginUser -> id);
 	printf("+--------------------- 사 용 자 메 뉴 ----------------------+\n");
 	printf(" 1. 모의테스트\n");
@@ -227,7 +223,8 @@ int subMenu(User *loginUser)
 
 	while(1)
 	{
-		printf(" 진행하실 번호를 입력해주세요: ");
+
+        printf(" 진행하실 번호를 입력해주세요: ");
 
 		int subMenuNum;
 		scanf("%d", &subMenuNum);
@@ -277,8 +274,6 @@ void clearBuffer()
 }
 
 void selQuestion(char num[], Question *qst) {
-    printf("문제출력해주세요! : %s\n", num);
-
     char line[1000];
     Question question = {.questionNumber = "", .correct = ""};
     int i = 0;
@@ -429,13 +424,13 @@ void setObstacle(CrossWolk *cws, PersonAndCar *psn, PersonAndCar *cars) {
 }
 
 void setCarPosition(char map[ROW][COL], Car *cptr) {
-    cptr -> now.row = 70;
-    cptr -> now.col = 82;
+    cptr -> now.row = 28;
+    cptr -> now.col = 58;
 
-    cptr -> before.row = 70;
-    cptr -> before.col = 82;
+    cptr -> before.row = 28;
+    cptr -> before.col = 58;
 
-    cptr -> beforeBlock = MAP_ICON4_NUM;
+    cptr -> beforeBlock = MAP_ICON1_NUM;
 
     map[cptr -> now.row][cptr -> now.col] = USER_CAR_ICON_NUM;
 }
@@ -444,6 +439,7 @@ void moveUserCar(char map[ROW][COL], Car *car) {
     char move;
     // 이동키 받기
     read(0, &move, sizeof(move));
+    car -> inputKey = move;
 
     // 시동안걸려있으면 아무것도 동작안함
     if ((car -> startupYn) == ON) {
@@ -452,14 +448,14 @@ void moveUserCar(char map[ROW][COL], Car *car) {
         car -> before.col = car -> now.col;
 
         map[car -> now.row][car -> now.col] = car -> beforeBlock;
-        if (move == KEY_GO || move == KEY_ACCEL || move == KEY_BREAK) {
+        if ( car -> inputKey == KEY_GO || car -> inputKey == KEY_ACCEL || car -> inputKey == KEY_BREAK ) {
             car -> turn ++; //차가 움직일 때만 턴수 증가
 
-            if (move == KEY_ACCEL) {
+            if (car -> inputKey == KEY_ACCEL) {
                 car -> kph += 20.0;
             }
 
-            if (move == KEY_BREAK) {
+            if (car -> inputKey == KEY_BREAK) {
                 if (car -> kph > 0){
                     car -> kph -= 20.0;
                 }
@@ -475,7 +471,7 @@ void moveUserCar(char map[ROW][COL], Car *car) {
             }else if (car -> direction == NORTH) {
                 (car -> now.row) -=  car -> kph / 20.0;
             }
-        }else if (move == KEY_LEFT) {
+        }else if (car -> inputKey == KEY_LEFT) {
             // 좌회전하는데 깜빡이를 깜빡...^^...
             if (car -> leftLight == OFF) {
                 car -> failLog[car -> failCnt] = FAIL_REASON_1;
@@ -498,7 +494,7 @@ void moveUserCar(char map[ROW][COL], Car *car) {
                 car -> direction = NORTH;
             }
 
-        }else if (move == KEY_RIGHT) {
+        }else if (car -> inputKey == KEY_RIGHT) {
             if (car -> rightLight == OFF) {
                 car -> failLog[car -> failCnt] = FAIL_REASON_2;
                 (car -> failCnt)++;
@@ -517,7 +513,7 @@ void moveUserCar(char map[ROW][COL], Car *car) {
             }else if (car -> direction == EAST) {
                 car -> direction = SOUTH;
             }
-        } else if (move == KEY_LEFT_LIGHT) {
+        } else if (car -> inputKey == KEY_LEFT_LIGHT) {
             // 왼깜빡 키면 오른깜빡 끄기
             if (car -> rightLight == ON) {
                 car -> rightLight = OFF;
@@ -528,7 +524,7 @@ void moveUserCar(char map[ROW][COL], Car *car) {
             }else {
                 car -> leftLight = ON;
             }
-        } else if (move == KEY_RIGHT_LIGHT) {
+        } else if (car -> inputKey == KEY_RIGHT_LIGHT) {
             if (car -> leftLight == ON) {
                 car -> leftLight = OFF;
             }
@@ -538,7 +534,7 @@ void moveUserCar(char map[ROW][COL], Car *car) {
             }else {
                 car -> rightLight = ON;
             }
-        } else if (move == KEY_CHANGE_LINE_LEFT) {
+        } else if (car -> inputKey == KEY_CHANGE_LINE_LEFT) {
             // 차선변경 깜빡이를 깜빡쓰..
             if (car -> leftLight == OFF) {
                 car -> failLog[car -> failCnt] = FAIL_REASON_3;
@@ -560,7 +556,7 @@ void moveUserCar(char map[ROW][COL], Car *car) {
             }else if (car -> direction == EAST) {
                 (car -> now.row)--;
             }
-        } else if (move == KEY_CHANGE_LINE_RIGHT) {
+        } else if (car -> inputKey == KEY_CHANGE_LINE_RIGHT) {
             if (car -> rightLight == OFF) {
                 car -> failLog[car -> failCnt] = FAIL_REASON_4;
                 (car -> failCnt)++;
@@ -579,7 +575,7 @@ void moveUserCar(char map[ROW][COL], Car *car) {
             }else if (car -> direction == EAST) {
                 (car -> now.row)++;
             }
-        } else if (move == KEY_OFF) {
+        } else if (car -> inputKey == KEY_OFF) {
             if ( car -> kph != 0.0) {
                 car -> failLog[car -> failCnt] = FALL_REASON_9;
                 (car -> failCnt)++;
@@ -596,10 +592,11 @@ void moveUserCar(char map[ROW][COL], Car *car) {
             || map[car -> now.row][car -> now.col] == MAP_ICON3_NUM) {
             if (map[car -> now.row][car -> now.col] == MAP_ICON3_NUM){
                 car -> failLog[car -> failCnt] = FALL_REASON_10;
+
             }else {
                 car -> failLog[car -> failCnt] = FALL_REASON_8;
             }
-
+            car -> failYn = ON;
             (car -> failCnt)++;
             car -> score -= 50;
         }
@@ -612,7 +609,7 @@ void moveUserCar(char map[ROW][COL], Car *car) {
     // 시동이 꺼져있으면...
     else {
         // w키가 시동키
-        if (move == KEY_GO ) {
+        if (car -> inputKey == KEY_GO ) {
             car -> startupYn = ON;
             car -> kph = 0.0;
         }
@@ -689,7 +686,7 @@ void moveCar(char map[ROW][COL], PersonAndCar *car, int turn) {
     for (int i = 0; i < 4; i++) {
         map[car[i].pos.row][car[i].pos.col] = car[i].beforeBlock;
 
-        if (turn % 10 > 5) {
+        if (turn % 10 > 4) {
             if (   (car[i].direction == NORTH && map[car[i].pos.row - 1][car[i].pos.col] == CROSSWALK_NUM)
                 || (car[i].direction == EAST && map[car[i].pos.row][car[i].pos.col + 1] == CROSSWALK_NUM)
                 || (car[i].direction == SOUTH && map[car[i].pos.row + 1][car[i].pos.col] == CROSSWALK_NUM)
@@ -845,6 +842,8 @@ void printMap(char map[ROW][COL], Car *car) {
                 printf("%6s", PERSON_ICON);
             } else if (map[i][j] == CAR_NUM) {
                 printf("%6s", CAR_ICON);
+            } else if (map[i][j] == MAP_FINISH_NUM) {
+                printf("%5s", MAP_FINISH);
             } else {
                 printf("?");
             }
@@ -905,10 +904,13 @@ void printStatus(Car car, char course) {
 }
 
 void printFailResult(Car *car) {
-    printf("시험에서 탈락하셨습니다.\n");
+    printf("===================================================================================================================================================================\n");
+    printf("이번실기 시험에서는 아쉽게 탈락하셨습니다.\n");
+    printf("아래 감점사항을 확인하시고 다음 시험에서는 좋은성적을 받기를 바랍니다.\n");
     printf("===================================================================================================================================================================\n");
     printf("[ 감점로그 (현재점수 : %d) ] \n", car -> score);
     for (int i = 0; i < sizeof(car -> failLog) / sizeof(car -> failLog[0]); i++) {
+        if (car -> failLog[i] == 0) break;
         printf("%d. ", i + 1);
         switch (car -> failLog[i]) {
             case FAIL_REASON_1:
@@ -943,6 +945,53 @@ void printFailResult(Car *car) {
             break;
         }
     }
+    printf("===================================================================================================================================================================\n");
+}
+
+void printSuccResult(Car *car) {
+    system("clear");
+    printf("===================================================================================================================================================================\n");
+    printf("축하합니다. 실기시험에 합격하셨습니다.\n");
+    printf("아래 감점사항들은 앞으로 운전하는데 조심부탁드립니다.\n");
+    printf("===================================================================================================================================================================\n");
+    printf("[ 감점로그 (현재점수 : %d) ] \n", car -> score);
+    for (int i = 0; i < sizeof(car -> failLog) / sizeof(car -> failLog[0]); i++) {
+        if (car -> failLog[i] == 0) break;
+        printf("%d. ", i + 1);
+        switch (car -> failLog[i]) {
+            case FAIL_REASON_1:
+                printf("좌회전 깜빡이 없음 : -10\n");
+            break;
+            case FAIL_REASON_2:
+                printf("우회전 깜빡이 없음 : -10\n");
+            break;
+            case FAIL_REASON_3:
+                printf("좌측 차선변경 깜빡이 없음 : -10\n");
+            break;
+            case FAIL_REASON_4:
+                printf("우측 차선변경 깜빡이 없음 : -10\n");
+            break;
+            case FAIL_REASON_5:
+                printf("코스이탈 : 실격\n");
+            break;
+            case FAIL_REASON_6:
+                printf("역주행 : 실격\n");
+            break;
+            case FAIL_REASON_7:
+                printf("신호위반 : 실격\n");
+            break;
+            case FALL_REASON_8:
+                printf("사고 : 실격\n");
+            break;
+            case FALL_REASON_9:
+                printf("감속 없이 시동 끔 : -20\n");
+            break;
+            case FALL_REASON_10:
+                printf("중앙선 침범 : 실격\n");
+            break;
+        }
+    }
+    printf("===================================================================================================================================================================\n");
 
 }
 
@@ -975,11 +1024,23 @@ void startTest() {
         printMap(map, &userCar);
         printStatus(userCar, course);
         moveUserCar(map, &userCar);
+        if ( userCar.inputKey == KEY_GO || userCar.inputKey == KEY_ACCEL || userCar.inputKey == KEY_BREAK ) {
+            moveCar(map, car, userCar.turn);
+            movePerson(map, psn, userCar.turn);
+            for (int i = 0; i < sizeof(car) / sizeof(car[0]); i++) {
+                if (car[i].beforeBlock == USER_CAR_ICON_NUM){
+                    userCar.failYn = ON;
+                    userCar.failLog[userCar.failCnt] = FALL_REASON_8;
+                    userCar.failCnt++;
+                }
+            }
+        }
         checkCrosswalk(cws, &userCar);
-        moveCar(map, car, userCar.turn);
-        movePerson(map, psn, userCar.turn);
         if (userCar.score < 70 || userCar.failYn == ON) {
             userCar.failYn = ON;
+            break;
+        }
+        if (userCar.beforeBlock == 'F'){
             break;
         }
     }
@@ -987,7 +1048,11 @@ void startTest() {
     if (userCar.failYn == ON) {
         system("clear");
         printFailResult(&userCar);
+    }else {
+        system("clear");
+        printSuccResult(&userCar);
     }
+    sleep(3);
 }
 
 void mockTest(User *loginUser) {
@@ -1020,8 +1085,8 @@ void mockTest(User *loginUser) {
             sprintf(date, "%d.%d.%d %d:%d",  tm.tm_year - 100, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min);
 
             FILE *fp = fopen(FILE_WRONG, "at");
-
-            fprintf(fp, "%s,%s,%s\n", qst.questionNumber, date, loginUser -> id);
+			//문제번호,날짜,제출자,사용여부
+            fprintf(fp, "%s,%s,%s,Y\n", qst.questionNumber, date, loginUser -> id);
             fclose(fp);
         }
     }

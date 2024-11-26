@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "/home/lms/CLionProjects/cteam/header/types.h"
+#include "../header/types.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
@@ -20,6 +20,7 @@ enum mapIcon{
     STOP_LINE_NUM = 'S',
     PERSON_NUM = 'P',
     CAR_NUM = 'C',
+    MAP_FINISH_NUM = 'F',
 };
 
 enum color {
@@ -52,7 +53,7 @@ enum failReason {
     FALL_REASON_9 = 9, // 감속없이 시동 끄기
     FALL_REASON_10 = 10, // 중앙선 침범
 };
-#define FILE_MAP "dataFile/map.txt"
+#define FILE_MAP "../dataFile/map.txt"
 
 #define COL 101
 #define ROW 100
@@ -72,6 +73,8 @@ enum failReason {
 #define STOP_LINE_ICON "⬜"
 #define PERSON_ICON "🙋"
 #define CAR_ICON "🚗"
+#define MAP_FINISH "🟪"
+
 
 #define KEY_GO 'w'
 #define KEY_BREAK 's'
@@ -97,6 +100,7 @@ void checkCrosswalk(CrossWolk *, Car *);
 void printMap(char [ROW][COL], Car *);
 void printStatus(Car, char);
 void printFailResult(Car *);
+void printSuccResult(Car *);
 
 void main() {
     srand(time(NULL));
@@ -134,11 +138,17 @@ void main() {
             userCar.failYn = ON;
             break;
         }
+        if (userCar.beforeBlock == 'F'){
+            break;
+        }
     }
 
     if (userCar.failYn == ON) {
         system("clear");
         printFailResult(&userCar);
+    }else {
+        system("clear");
+        printSuccResult(&userCar);
     }
 }
 
@@ -447,7 +457,7 @@ void moveCar(char map[ROW][COL], PersonAndCar *car, int turn) {
     for (int i = 0; i < 4; i++) {
         map[car[i].pos.row][car[i].pos.col] = car[i].beforeBlock;
 
-        if (turn % 10 > 5) {
+        if (turn % 10 >= 5) {
             if (   (car[i].direction == NORTH && map[car[i].pos.row - 1][car[i].pos.col] == CROSSWALK_NUM)
                 || (car[i].direction == EAST && map[car[i].pos.row][car[i].pos.col + 1] == CROSSWALK_NUM)
                 || (car[i].direction == SOUTH && map[car[i].pos.row + 1][car[i].pos.col] == CROSSWALK_NUM)
@@ -603,6 +613,8 @@ void printMap(char map[ROW][COL], Car *car) {
                 printf("%6s", PERSON_ICON);
             } else if (map[i][j] == CAR_NUM) {
                 printf("%6s", CAR_ICON);
+            } else if (map[i][j] == MAP_FINISH_NUM) {
+                printf("%5s", MAP_FINISH);
             } else {
                 printf("?");
             }
@@ -663,7 +675,9 @@ void printStatus(Car car, char course) {
 }
 
 void printFailResult(Car *car) {
-    printf("시험에서 탈락하셨습니다.\n");
+    printf("===================================================================================================================================================================\n");
+    printf("이번실기 시험에서는 아쉽게 탈락하셨습니다.\n");
+    printf("아래 감점사항을 확인하시고 다음 시험에서는 좋은성적을 받기를 바랍니다.\n");
     printf("===================================================================================================================================================================\n");
     printf("[ 감점로그 (현재점수 : %d) ] \n", car -> score);
     for (int i = 0; i < sizeof(car -> failLog) / sizeof(car -> failLog[0]); i++) {
@@ -701,5 +715,56 @@ void printFailResult(Car *car) {
             break;
         }
     }
+    printf("===================================================================================================================================================================\n");
+    printf("메인화면으로 돌아가시려면 아무키나 누르세요...");
+    char key;
+    read(0, &key, sizeof(key));
+}
 
+void printSuccResult(Car *car) {
+    system("clear");
+    printf("===================================================================================================================================================================\n");
+    printf("축하합니다. 실기시험에 합격하셨습니다.\n");
+    printf("아래 감점사항들은 앞으로 운전하는데 조심부탁드립니다.\n");
+    printf("===================================================================================================================================================================\n");
+    printf("[ 감점로그 (현재점수 : %d) ] \n", car -> score);
+    for (int i = 0; i < sizeof(car -> failLog) / sizeof(car -> failLog[0]); i++) {
+        printf("%d. ", i + 1);
+        switch (car -> failLog[i]) {
+            case FAIL_REASON_1:
+                printf("좌회전 깜빡이 없음 : -10\n");
+            break;
+            case FAIL_REASON_2:
+                printf("우회전 깜빡이 없음 : -10\n");
+            break;
+            case FAIL_REASON_3:
+                printf("좌측 차선변경 깜빡이 없음 : -10\n");
+            break;
+            case FAIL_REASON_4:
+                printf("우측 차선변경 깜빡이 없음 : -10\n");
+            break;
+            case FAIL_REASON_5:
+                printf("코스이탈 : 실격\n");
+            break;
+            case FAIL_REASON_6:
+                printf("역주행 : 실격\n");
+            break;
+            case FAIL_REASON_7:
+                printf("신호위반 : 실격\n");
+            break;
+            case FALL_REASON_8:
+                printf("사고 : 실격\n");
+            break;
+            case FALL_REASON_9:
+                printf("감속 없이 시동 끔 : -20\n");
+            break;
+            case FALL_REASON_10:
+                printf("중앙선 침범 : 실격\n");
+            break;
+        }
+    }
+    printf("===================================================================================================================================================================\n");
+    printf("메인화면으로 돌아가시려면 아무키나 누르세요...");
+    char key;
+    read(0, &key, sizeof(key));
 }

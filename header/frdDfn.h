@@ -7,17 +7,17 @@
 #include <stdlib.h>
 #include <termios.h>
 
-#include "../header/types.h"
-#define FILE_DATA "../dataFile/test.csv"
-#define FILE_LOGIN "../dataFile/UserLogin.txt" // 회원정보
-#define FILE_WRONG "../dataFile/WrongAnswerNote.txt" // 오답노트
-#define FILE_MAP "../dataFile/map.txt"
+//#include "../header/types.h"
+//#define FILE_DATA "../dataFile/test.csv"
+//#define FILE_LOGIN "../dataFile/UserLogin.txt" // 회원정보
+//#define FILE_WRONG "../dataFile/WrongAnswerNote.txt" // 오답노트
+//#define FILE_MAP "../dataFile/map.txt"
 
-// #include "/home/lms/CLionProjects/cteam/header/types.h"
-// #define FILE_DATA "/home/lms/CLionProjects/cteam/dataFile/test.csv"
-// #define FILE_LOGIN "/home/lms/CLionProjects/cteam/dataFile/UserLogin.txt" // 회원정보
-// #define FILE_WRONG "/home/lms/CLionProjects/cteam/dataFile/WrongAnswerNote.txt" // 오답노트
-// #define FILE_MAP "/home/lms/CLionProjects/cteam/dataFile/map.txt"
+#include "/home/lms/CLionProjects/cteam/header/types.h"
+#define FILE_DATA "/home/lms/CLionProjects/cteam/dataFile/test.csv"
+#define FILE_LOGIN "/home/lms/CLionProjects/cteam/dataFile/UserLogin.txt" // 회원정보
+#define FILE_WRONG "/home/lms/CLionProjects/cteam/dataFile/WrongAnswerNote.txt" // 오답노트
+#define FILE_MAP "/home/lms/CLionProjects/cteam/dataFile/map.txt"
 
 #define STRING_SIZE 100 // 문자열 길이
 #define USER_SIZE 20 // 문자 길이
@@ -43,6 +43,7 @@
 #define STOP_LINE_ICON "⬜"
 #define PERSON_ICON "🙋"
 #define CAR_ICON "🚗"
+#define MAP_FINISH "🟪"
 
 #define KEY_GO 'w'
 #define KEY_BREAK 's'
@@ -69,6 +70,7 @@ enum mapIcon{
     STOP_LINE_NUM = 'S',
     PERSON_NUM = 'P',
     CAR_NUM = 'C',
+    MAP_FINISH_NUM = 'F',
 };
 
 enum color {
@@ -123,6 +125,7 @@ void checkCrosswalk(CrossWolk *, Car *);
 void printMap(char [ROW][COL], Car *);
 void printStatus(Car, char);
 void printFailResult(Car *);
+void printSuccResult(Car *);
 
 void startTest();
 void mockTest();

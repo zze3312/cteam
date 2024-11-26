@@ -9,10 +9,9 @@ typedef struct{
 } Question;
 
 typedef struct{
-    char gubun;
-    int userInput;
-    char useYn;
-    char date[8];
+    char userId[20];
+    char useYn[2];
+    char date[30];
     Question question;
 } Result;
 
@@ -37,8 +36,9 @@ typedef struct{
     Position before;
     char beforeBlock;
     int failCnt;
-    char failLog[10];
+    char failLog[5];
     int turn;
+    char inputKey;
 } Car;
 
 

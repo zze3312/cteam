@@ -3,10 +3,13 @@
 #include<string.h>
 #include<time.h>
 #include<unistd.h>
-#include"header/types.h"
+#include <wctype.h>
 
-#define FILE_LOGIN "dataFile/UserLogin.txt" // 회원정보
-#define FILE_WRONG "dataFile/WrongAnswerNote.txt" // 오답노트
+#include "/home/lms/CLionProjects/cteam/header/types.h"
+
+#define FILE_LOGIN "/home/lms/CLionProjects/cteam/dataFile/UserLogin.txt" // 회원정보
+#define FILE_DATA "/home/lms/CLionProjects/cteam/dataFile/test.csv"
+#define FILE_WRONG "/home/lms/CLionProjects/cteam/dataFile/WrongAnswerNote.txt" // 오답노트
 #define STRING_SIZE 100 // 문자열 길이
 #define USER_SIZE 20 // 문자 길이
 #define QUESTIONS_NUM 40 // 문제수
@@ -19,6 +22,12 @@ void userInfoFind(); // 가입내역조회
 void subComment(); // 로그인 후 메뉴
 int subMenu(User *); // 메뉴 선택
 void clearBuffer(); // 입력값 비우기
+
+
+void wrongAnswerNote();
+
+
+void selQuestion(char num[], Question *qst);
 
 int main(void)
 {
@@ -286,7 +295,7 @@ int subMenu(User *loginUser)
 		}
 		else if (subMenuNum == 5) // 오답노트
 		{
-			printf(" 오답노트 실행\n");
+			wrongAnswerNote(loginUser);
 		}
 		else if (subMenuNum == 6) // 로그아웃
 		{
@@ -311,57 +320,148 @@ void clearBuffer()
     while (getchar() != '\n');
 }
 
-void wrongAnswerNote(char num[], Result * testInfo, User * LoginID)
-{
+void wrongAnswerNote(User *loginUser){
+	Result temp;
+	Result temp2;
+	Result list[10];
+
 	FILE * fp = fopen(FILE_WRONG, "rt");
-	if (fp == NULL)
-	{
-		printf("오답 정리할 문제가 없습니다.\n");
+
+	if (fp == NULL){
+		printf("오답노트 파일이 없습니다.\n");
 	}
-	char userId[USER_SIZE];
+	printf("+----------------------- 오 답 노 트 ------------------------+\n");
+	printf("  회차  |        일시        |   제출자   \n");
 	char line[STRING_SIZE];
-	int episode;
-	
-	Result wrong;
-	User user;
+	int i = 0;
+	while (fgets(line, sizeof(line), fp) != NULL) {
+		strcpy(temp.question.questionNumber, strtok(line, ","));
+		strcpy(temp.date, strtok(NULL, ","));
+		strcpy(temp.userId, strtok(NULL, ","));
+		strcpy(temp.useYn, strtok(NULL, "\n"));
+		// printf("[t1.date : %s / t2.date : %s]", temp.date, temp2.date);
+		// printf("[t1.userId : %s / t2.userId : %s]\n", temp.userId, temp2.userId);
+		if (strcmp(temp.useYn, "Y") == 0
+			&& (strcmp(temp.date, temp2.date) != 0 || strcmp(temp.userId, temp2.userId) != 0)
+			&& strcmp(loginUser -> id, temp.userId) == 0){
+			strcpy(temp2.date, temp.date);
+			strcpy(temp2.userId, temp.userId);
 
-	selQuestion();
-	while (fgets(line, sizeof(line), fp))
-	{
-		strcpy(wrong.question.questionNumber,strtok(line, ","));
-		strcpy(wrong.date,strtok(line, ","));
-		strcpy(user.id,strtok(line, "\n"));
+			printf("%5d      ", i);
+			printf("%s     ",temp.date); //일시
+			printf("%s\n",temp.userId); //제출자
 
-		printf("+----------------------- 오 답 노 트 ------------------------+\n");			
-		printf("  회차  |    일시    |   제출자   ");		
-		if (strcmp(userId, user.id) == 0) 
-		{
-			// 회차 증가?
-			printf("   %d         %s          %d", wrong.gubun, wrong.date, user.id);
+			strcpy(list[i].date, temp.date);
+			strcpy(list[i].userId, temp.userId);
+
+			i++;
 		}
-		printf("+-----------------------------------------------------------+\n");
-		printf("오답노트를 진행하실 회차를 선택해주세요.\n");
-		scanf("%d", &episode);
-	}
-	// 회차마다 오답노트 진행? 회차 선택시 출력?
-	if (episode == i)
-	if (wrong.userInput == wrong.question.correct)
-	{
-		int choice;
-		printf("정답입니다! 이 문제를 오답노트에서 삭제하시겠습니까? '1' 삭제 / '0' 유지):");
-		scanf("%d", &choice);
-
-		if (choice == 0) 
-		{
-			fprintf("%s\n 정답: %d\n 오답: %d\n", wrong.question.questionNumber, wrong.question.correct, wrong.userInput);
-		}
-	} 
-	else 
-	{
-		printf("틀렸습니다. 추가 학습이 필요합니다.\n");
-		fprintf(fp, "%s\n 정답: %d\n 오답: %d\n", wrong.question.questionNumber, wrong.question.correct, wrong.userInput);
 	}
 	fclose(fp);
+
+	printf("+----------------------------------------------------------+\n");
+	printf("풀이하실 회차를 선택해주세요 : ");
+	int userInput = fgetc(stdin) - '0';
+
+	fp = fopen(FILE_WRONG, "rt");
+	if (fp == NULL) {
+		printf("오답노트 파일이 없습니다.\n");
+	}
+	Result wrong[40];
+	i = 0;
+	while (fgets(line, sizeof(line), fp) != NULL) {
+		strcpy(temp.question.questionNumber, strtok(line, ","));
+		strcpy(temp.date, strtok(NULL, ","));
+		strcpy(temp.userId, strtok(NULL, ","));
+		strcpy(temp.useYn, strtok(NULL, "\n"));
+		if (strcmp(temp.useYn, "Y") == 0
+			&& strcmp(list[userInput - 1].date, temp.date) == 0
+			&& strcmp(list[userInput - 1].userId, temp.userId) == 0) {
+			strcpy(wrong[i].question.questionNumber, temp.question.questionNumber);
+			strcpy(wrong[i].date, temp.date);
+			strcpy(wrong[i].userId, temp.userId);
+			strcpy(wrong[i].useYn, temp.useYn);
+			i++;
+		}
+	}
+	fclose(fp);
+
+	i = 0;
+	while (wrong[i].question.questionNumber != NULL) {
+		//문제불러오기
+		selQuestion(wrong[i].question.questionNumber, &(wrong[i].question));
+
+		char result[2] = "";
+		printf("답 입력 : ");
+		fscanf(stdin, "%s", result);
+		char passYn = 'N';
+		for (int i = 0; i < strlen(wrong[i].question.correct); i++) {
+			if (wrong[i].question.correct[i] == result[0]) {
+				passYn = 'Y';
+				break;
+			}
+		}
+
+		if (passYn == 'Y') {
+			printf("정답!\n");
+			printf("삭제하시겠습니까?\n");
+			fgets(result, sizeof(result), stdin);
+			strcpy(strstr(result, "\n"), "\0" );
+			if (result == "Y" || result == "y") {
+				towupper(result);
+				strcpy(wrong[i].useYn, "N");
+			}
+		} else {
+			printf("오답!\n");
+		}
+		i++;
+	}
+
+
+//	char userId[USER_SIZE];
+//	char line[STRING_SIZE];
+//	int episode;
+//
+//	Result wrong;
+//	User user;
+//
+//	selQuestion(wrong.question.questionNumber, &wrong.question);
+//	while (fgets(line, sizeof(line), fp))
+//	{
+//		strcpy(wrong.question.questionNumber,strtok(line, ","));
+//		strcpy(wrong.date,strtok(line, ","));
+//		strcpy(user.id,strtok(line, "\n"));
+//
+//		printf("+----------------------- 오 답 노 트 ------------------------+\n");
+//		printf("  회차  |    일시    |   제출자   ");
+//		if (strcmp(userId, user.id) == 0)
+//		{
+//			// 회차 증가?
+//			printf("   %d         %s          %d", wrong.gubun, wrong.date, user.id);
+//		}
+//		printf("+-----------------------------------------------------------+\n");
+//		printf("오답노트를 진행하실 회차를 선택해주세요.\n");
+//		scanf("%d", &episode);
+//	}
+//	// 회차마다 오답노트 진행? 회차 선택시 출력?
+//	if (1);
+//	if (wrong.userInput == wrong.question.correct)
+//	{
+//		int choice;
+//		printf("정답입니다! 이 문제를 오답노트에서 삭제하시겠습니까? '1' 삭제 / '0' 유지):");
+//		scanf("%d", &choice);
+//
+//		if (choice == 0)
+//		{
+//			fprintf("%s\n 정답: %d\n 오답: %d\n", wrong.question.questionNumber, wrong.question.correct, wrong.userInput);
+//		}
+//	}
+//	else
+//	{
+//		printf("틀렸습니다. 추가 학습이 필요합니다.\n");
+//		fprintf(fp, "%s\n 정답: %d\n 오답: %d\n", wrong.question.questionNumber, wrong.question.correct, wrong.userInput);
+//	}
+//	fclose(fp);
 }
 
 // void realTestResult()
@@ -402,3 +502,106 @@ void wrongAnswerNote(char num[], Result * testInfo, User * LoginID)
 // 회차 선택시 오답노트 복습 진행
 // 오답노트
 // 로그인한 ID와 파일 내 ID가 동일한 경우
+
+
+void selQuestion(char num[], Question *qst) {
+    char line[1000];
+    Question question = {.questionNumber = "", .correct = ""};
+    int i = 0;
+
+    FILE *fp = fopen(FILE_DATA, "rt");
+    while(fgets(line, sizeof(line), fp)) {
+
+        if (strcmp(question.questionNumber, num) == 0) {
+            break;
+        }
+
+        char token = 'F';
+        for (int j = 0; j < strlen(line); j++) {
+            if (line[j] == '"') {
+                token = 'T';
+                break;
+            }
+        }
+        if (token == 'F'){
+            strcpy(question.questionNumber,strtok(line, ".")); //문제번호
+
+            if (strcmp(question.questionNumber, num) == 0){
+                printf("%s. ", question.questionNumber);
+                printf("%s\n", strtok(NULL, ","));//문제
+                printf("%s\n", strtok(NULL, ","));//1문항
+                printf("%s\n", strtok(NULL, ","));//2문항
+                printf("%s\n", strtok(NULL, ","));//3문항
+                printf("%s\n", strtok(NULL, ","));//4문항
+                //printf("%s\n", strtok(NULL, "\n\r"));//답
+            }
+            strcpy(question.correct, strtok(line, "."));
+            i++;
+        } else {
+            int cnt = 0;
+            int gubun = 0;
+            char splitYn = 'N';
+            char buffer[500] = "";
+            char temp[30] = "";
+
+            while (1){
+                splitYn = 'N';
+                cnt = 0;
+                if (gubun == 0) {
+                    strcpy(temp, strtok(line, " "));
+                }else if (gubun == 6) {
+                    strcpy(temp, strtok(NULL, "\r"));
+                } else {
+                    strcpy(temp, strtok(NULL, " "));
+                }
+
+                strcat(buffer, temp);
+                strcat(buffer, " ");
+
+                for (int j = 0; j < strlen(buffer); j++) {
+                    if (buffer[j] == '"') {
+                        cnt++;
+                    }
+                }
+
+                for (int j = 0; j < strlen(temp); j++) {
+                    if (temp[j] == '\0') break;
+                    if (temp[j] == '.' || (temp[j] == ',' && (cnt == 0 || cnt == 2)) || temp[j] == '\n') {
+                        splitYn = 'Y';
+                        break;
+                    }
+                }
+                if (splitYn == 'Y') {
+                    if (gubun == 0) {
+                        strcpy(strstr(buffer, "."),"");
+                        strcpy(question.questionNumber, buffer);
+                        printf("%s. ", question.questionNumber);
+                    }else if (gubun == 6) {
+                        strcpy(question.correct, buffer);
+                    }
+
+                    gubun++;
+
+                    if (gubun != 1 && gubun != 7 && strcmp(question.questionNumber, num) == 0) {
+                        printf("%s\n", buffer);
+                    }
+
+                    strcpy(buffer, "");
+                }
+
+                if (gubun == 7) {
+                    gubun = 0;
+                    i++;
+                    break;
+                }
+            }
+        }
+
+    }
+    fclose(fp);
+
+    strcpy(qst->questionNumber, question.questionNumber);
+    strcpy(qst->correct, question.correct);
+
+    printf("\n");
+}
