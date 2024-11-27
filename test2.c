@@ -28,7 +28,7 @@ void clearBuffer(); // 입력값 비우기
 
 void wrongAnswerNote();
 
-
+void testResult(char userId);
 void selQuestion(char num[], Question *qst);
 
 int main(void)
@@ -417,46 +417,6 @@ void wrongAnswerNote(User *loginUser){
 
 }
 
-// void realTestResult()
-// {
-// 	int count, totalScore = 0; // 구분, 점수
-// 	char date, testResult; // 날짜, 합격여부
-// 	char ch
-
-// 	printf("+-------------------- 시 험 합 격 여 부 ---------------------+\n");
-// 	if (totalScore >= 70)
-// {
-// 	printf("합격");
-// }
-// 	while(1)
-// 	{
-// 		if ()
-// 		{
-// 			printf("  구분  |    날짜    |   점수   |  합격여부  ");
-// 			printf("   %d         %s          %d          %s", count, date, testTime, totalScore, testResult);
-// 		}
-// 	}
-// }
-
-// void backMenu()
-// {
-// 	printf("메뉴로 돌아가시겠습니까? '0', 계속 진행하시겠습니까? '1'");
-// 	scanf("%d", &backNum);
-	
-// 	if (backMenu == 0)
-// 	{
-// 		break;
-// 	}
-// }
-
-// 오답노트 시작
-// 모의테스트에서 틀린 문제 파일 출력
-// 오답노트 내용을 표로 출력 ex) 회차, 날짜, 시간, 점수
-// 회차 선택시 오답노트 복습 진행
-// 오답노트
-// 로그인한 ID와 파일 내 ID가 동일한 경우
-
-
 void selQuestion(char num[], Question *qst) {
     char line[1000];
     Question question = {.questionNumber = "", .correct = ""};
@@ -558,3 +518,4 @@ void selQuestion(char num[], Question *qst) {
 
     printf("\n");
 }
+
