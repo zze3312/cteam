@@ -32,6 +32,9 @@
 #define COL 101
 #define ROW 100
 
+#define PER_SEC 1000
+#define COUNTTIME 10
+
 #define MAP_ICON1 "⬛"
 #define MAP_ICON2 "🟫"
 #define MAP_ICON3 "🟨"
@@ -121,17 +124,32 @@ void clearBuffer();
 
 /** 시간가져오기\n
   * 파라메터
-  *  - 담을 문자열 변수 주소,\n
-  *  - 시간 형식(년, 월, 일, 시, 분)\n
+  *  - 담을 문자열 변수 주소
+  *  - 시간 형식(년, 월, 일, 시, 분)
   *    ex) "%d.%d.%d %d:%d" >> 24.11.27 14:39
   */
 void getTime(char *, char [15]);
+
+/** 모의고사 시험체크(0초부터 증가)\n
+  * 파라메터
+  *  - 시험 시작시각 정보
+  */
+int checkMockTime(time_t);
+
+/** 필기시험 시험체크(2400초(40분)부터 감소)\n
+  * 파라메터
+  *  - 시험 시작시각 정보
+  */
+int checkWrittenTime(time_t);
 
 /** 메인메뉴 불러오기 (로그인, 회원가입, 아이디 비번찾기 등) */
 void mainMenu();
 
 //메인메뉴
-/** 서브메뉴 불러오기 (모의테스트, 오답노트, 실기시험 등) */
+/** 서브메뉴 불러오기 (모의테스트, 오답노트, 실기시험 등)\n
+  * 파라메터
+  *  - 로그인된 사용자 정보
+ */
 int subMenu(User *);
 
 /** 아이디/비밀번호 찾기 */
@@ -152,6 +170,14 @@ void userLogin(User *);
   *  - 로그인된 사용자 정보
   */
 void mockTest(User *);
+
+/** 모의테스트 결과 출력\n
+  * 파라메터
+  *  - 시험 점수
+  *  - 로그인된 사용자 정보
+  *  - 시험 시작시각 정보
+  */
+void mockTestResult(double, User *, time_t);
 
 /** 필기시험\n
   * 파라메터
@@ -180,7 +206,8 @@ void testResult(User *);
 // 필기문제 관련
 /** 문제 불러오기\n
   * 파라메터
-  *  - 불러올 문제의 번호, 문제 번호와 답이 담길 구조체의 주소값
+  *  - 불러올 문제의 번호
+  *  - 문제 번호와 답이 담길 구조체의 주소값
   */
 void selQuestion(char [], Question *);
 
@@ -188,8 +215,9 @@ void selQuestion(char [], Question *);
   * 파라메터
   *  - 시험 결과
   *  - 로그인된 사용자 정보
+  *  - 시험 시작 시간
   */
-void printWrittenResultFile(double, User *);
+void printWrittenResultFile(double, User *, time_t);
 
 // 실기시험 관련
 /** 초기 맵 셋팅\n
@@ -200,22 +228,22 @@ void setMap(char [ROW][COL]);
 
 /** 초기 횡단보도, 신호등, 사람, 사용자가 아닌 다른 자동차 셋팅\n
   * 파라메터
-  *  - 횡단보도와 신호등 정보가 담길 CrossWolk 배열,\n
-  *  - 사람 정보가 담길 PersonAndCar 배열,\n
+  *  - 횡단보도와 신호등 정보가 담길 CrossWolk 배열
+  *  - 사람 정보가 담길 PersonAndCar 배열
   *  - 다른 자동차 정보가 담길 PersonAndCar 배열
   */
 void setObstacle(CrossWolk *, PersonAndCar *, PersonAndCar *);
 
 /** 사용자 자동차 위치 기본셋팅\n
   * 파라메터
-  *  - 맵 정보가 셋팅된 100 * 101 문자형 배열,\n
+  *  - 맵 정보가 셋팅된 100 * 101 문자형 배열
   *  - 사용자 자동차 정보가 담길 구조체의 주소
   */
 void setCarPosition(char [ROW][COL], Car *);
 
 /** 사용자 자동차 움직임 동작\n
   * 파라메터
-  *  - 맵 정보가 셋팅된 100 * 101 문자형 배열,\n
+  *  - 맵 정보가 셋팅된 100 * 101 문자형 배열
   *  - 사용자 자동차 정보가 담긴 구조체의 주소
   */
 void moveUserCar(char [ROW][COL], Car *);

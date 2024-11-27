@@ -1,140 +1,96 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <time.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <termios.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <dirent.h>
-#include <ctype.h>
-
-#include "/home/lms/CLionProjects/cteam/header/types.h"
-#define FILE_DATA "/home/lms/CLionProjects/cteam/dataFile/test.txt"
-
-void selQuestion(char num[], Question *qst);
+#include <string.h>
+#define TIME_LIMIT 2400.0
 
 
-void writtenTest(User *);
-void printWrittenResultFile(double score, User *);
+void timer(time_t start);
+void timer2(time_t start);
 
-void main() {
+int main()
+{
+    time_t start;
+    time(&start);
+    printf("제한시간 40분");
 
-    printf("\n");
+    timer2(start);
+    return 0;
 }
 
+// void timer(time_t start)    // Timer
+// {
 
+//     char input[100];
+//     time_t end; // 현재 시간 저장
+//     double elapsed, remaining_time;
 
+//     while (1)
+//     {
+//         printf("입력 : ");
+//         fgets(input, sizeof(input), stdin);
+//         input[strcspn(input, "\n")] = 0;
 
+//         if (strcmp(input, "exit") == 0)
+//         {
+//             printf("종료\n");
+//             break;
+//         }
 
+//         time(&end);
 
+//         elapsed = difftime(end, start);
 
+//         remaining_time = 0 + elapsed;
 
+//         if (remaining_time <= 0)
+//         {
+//             printf("제한 시간 종료");
+//             // 남은 문제 오답처리
 
+//             break;
+//         }
 
+//         printf("남은 시간: %.f분 %.f초\n", remaining_time / 60, remaining_time);
 
-void selQuestion(char num[], Question *qst) {
-    char line[1000];
-    Question question = {.questionNumber = "", .correct = ""};
-    int i = 0;
+//     }
 
-    FILE *fp = fopen(FILE_DATA, "rt");
-    while(fgets(line, sizeof(line), fp)) {
+// }
 
-        if (strcmp(question.questionNumber, num) == 0) {
+void timer2(time_t start)    // countdown
+{
+
+    char input[100];
+    time_t end; // 현재 시간 저장
+    double elapsed, remaining_time;
+
+    while (1)
+    {
+        printf("입력 : ");
+        fgets(input, sizeof(input), stdin);
+        input[strcspn(input, "\n")] = 0;
+
+        if (strcmp(input, "exit") == 0)
+        {
+            printf("종료\n");
             break;
         }
 
-        char token = 'F';
-        for (int j = 0; j < strlen(line); j++) {
-            if (line[j] == '"') {
-                token = 'T';
-                break;
-            }
+        time(&end);
+
+        elapsed = difftime(end, start);
+
+        remaining_time = TIME_LIMIT - elapsed;
+
+        if (remaining_time <= 0)
+        {
+            printf("제한 시간 종료");
+            // 남은 문제 오답처리
+
+            break;
         }
-        if (token == 'F'){
-            strcpy(question.questionNumber,strtok(line, ".")); //문제번호
 
-            if (strcmp(question.questionNumber, num) == 0){
-                printf("%s. ", question.questionNumber);
-                printf("%s\n", strtok(NULL, ","));//문제
-                printf("%s\n", strtok(NULL, ","));//1문항
-                printf("%s\n", strtok(NULL, ","));//2문항
-                printf("%s\n", strtok(NULL, ","));//3문항
-                printf("%s\n", strtok(NULL, ","));//4문항
-                //printf("%s\n", strtok(NULL, "\n\r"));//답
-                strcpy(question.correct, strtok(NULL, "\n"));
-            }
-            i++;
-        } else {
-            int cnt = 0;
-            int gubun = 0;
-            char splitYn = 'N';
-            char buffer[500] = "";
-            char temp[30] = "";
-
-            while (1){
-                splitYn = 'N';
-                cnt = 0;
-                if (gubun == 0) {
-                    strcpy(temp, strtok(line, " "));
-                }else if (gubun == 6) {
-                    strcpy(temp, strtok(NULL, "\r"));
-                } else {
-                    strcpy(temp, strtok(NULL, " "));
-                }
-
-                strcat(buffer, temp);
-                strcat(buffer, " ");
-
-                for (int j = 0; j < strlen(buffer); j++) {
-                    if (buffer[j] == '"') {
-                        cnt++;
-                    }
-                }
-
-                for (int j = 0; j < strlen(temp); j++) {
-                    if (temp[j] == '\0') break;
-                    if ((temp[j] == '.' && gubun == 0) || (temp[j] == ',' && (cnt == 0 || cnt == 2)) || temp[j] == '\n') {
-                        splitYn = 'Y';
-                        break;
-                    }
-                }
-                if (splitYn == 'Y') {
-                    if (gubun == 0) {
-                        strcpy(strstr(buffer, "."),"");
-                        strcpy(question.questionNumber, buffer);
-                        if(strcmp(question.questionNumber, num) == 0){
-                            printf("%s. ", question.questionNumber);
-                        }
-                    }else if (gubun == 6) {
-                        strcpy(question.correct, buffer);
-                    }
-
-                    gubun++;
-
-                    if (gubun != 1 && gubun != 7 && strcmp(question.questionNumber, num) == 0) {
-                        printf("%s\n", buffer);
-                    }
-
-                    strcpy(buffer, "");
-                }
-
-                if (gubun == 7) {
-                    gubun = 0;
-                    i++;
-                    break;
-                }
-            }
-        }
+        printf("남은 시간: %.f분 총 %.f초\n", remaining_time / 60, remaining_time);
 
     }
-    fclose(fp);
 
-    strcpy(qst->questionNumber, question.questionNumber);
-    strcpy(qst->correct, question.correct);
-
-    printf("\n");
 }

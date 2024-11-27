@@ -29,8 +29,35 @@ void getTime(char *date, char format[15]){
     sprintf(date, format,  tm.tm_year - 100, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min);
 }
 
+int checkMockTime(time_t start_time){
+    time_t current_time = time(NULL);
+    int dif_time = difftime(current_time, start_time);
+    int remain_time = 0;
+    remain_time += dif_time;
+    int minute = remain_time / 60;
+    int second = remain_time % 60;
+    printf(" 진행 시간 : %d분 %d초\n", minute, second);
+    return 1;
+}
+
+int checkWrittenTime(time_t start_time){
+    time_t current_time = time(NULL);
+    int dif_time = difftime(current_time, start_time);
+    int remain_time = COUNTTIME - dif_time;
+    int minute = remain_time / 60;
+    int second = remain_time % 60;
+
+    printf(" 남은 시간 : %d분 %d초\n", minute < 0 ? 0 : minute, second < 0 ? 0 : second);
+
+    if (dif_time >= COUNTTIME) {
+        return 0;
+    }
+    return 1;
+}
+
 void mainMenu(){
     int mainMenuNum;
+    system("clear");
     printf("+-----------------------------------------------------------+\n");
     printf("|                  브고트 운전면허 프로그램                 |\n");
     printf("+-----------------------------------------------------------+\n");
@@ -304,6 +331,9 @@ void userLogin(User *loginUser) {
 }
 
 void mockTest(User *loginUser) {
+    time_t start_time = time(NULL);
+    double score = 0.0;
+
     for (int i = 0; i < 40; i++){
         char selNum[5];
         int randomNum;
@@ -315,12 +345,18 @@ void mockTest(User *loginUser) {
         }
 
         sprintf(selNum, "%d", randomNum);
+
         system("clear");
         Question qst;
+        printf(" 현재 로그인된 아이디 : %s\n", loginUser -> id);
+        printf("+------------------------------------------------------------+\n");
+        checkMockTime(start_time);
+        printf(" 현재 점수 : %.1f\n", score);
+        printf("+------------------------------------------------------------+\n");
         selQuestion(selNum, &qst);
 
         char result[2] = "";
-        printf("답 입력(q 입력 시 종료) : ");
+        printf(" 답 입력(q 입력 시 종료) : ");
         fscanf(stdin, "%s", result);
 
         if(result[0] == 'q'){
@@ -334,12 +370,15 @@ void mockTest(User *loginUser) {
             }
         }
 
-        if (passYn == 'Y') printf("정답!\n");
-        else {
+        if (passYn == 'Y') {
+            printf(" 정답입니다!\n");
+            score += 2.5;
+            sleep(1);
+        } else {
             char date[30] = "";
             char fileName[100] = "";
-            printf("오답!\n");
-            getTime(date, "_%d%d%d_%d%d");
+            printf(" 오답입니다!\n");
+            getTime(date, "_%02d%02d%02d_%02d%02d");
 
             strcat(fileName, "/home/lms/CLionProjects/cteam/dataFile/");
             strcat(fileName, loginUser -> id);
@@ -353,8 +392,22 @@ void mockTest(User *loginUser) {
             //문제번호,사용여부
             fprintf(fp, "%s,\n", qst.questionNumber);
             fclose(fp);
+            sleep(1);
         }
     }
+    getchar();
+    mockTestResult(score, loginUser, start_time);
+}
+
+void mockTestResult(double score, User *loginUser, time_t start_time){
+    system("clear");
+    printf(" 현재 로그인된 아이디 : %s\n", loginUser -> id);
+    printf("+------------------------------------------------------------+\n");
+    checkMockTime(start_time);
+    printf(" 현재 까지 푼 문제 점수 : %.1f\n", score);
+    printf("+------------------------------------------------------------+\n");
+    printf(" 메뉴로 돌아가시려면 아무키나 입력해주세요 : ");
+    getchar();
 }
 
 void writtenTest(User *loginUser) {
@@ -385,11 +438,19 @@ void writtenTest(User *loginUser) {
         sprintf(questionList[i].questionNumber, "%d", randomNum);
     }
 
+    time_t start_time = time(NULL);
     for (int i = 0; i < 40; i++) {
         system("clear");
+        printf(" 현재 로그인된 아이디 : %s\n", loginUser -> id);
+        printf("+-----------------------------------------------------------+\n");
+        int timeYn = checkWrittenTime(start_time);
+        if(timeYn == 0){
+            break;
+        }
+        printf("+-----------------------------------------------------------+\n");
         selQuestion(questionList[i].questionNumber, &questionList[i]);
 
-        printf("답 입력 : ");
+        printf(" 답 입력 : ");
         fscanf(stdin, "%s", userInputList[i].correct);
     }
 
@@ -405,8 +466,8 @@ void writtenTest(User *loginUser) {
         }
         if (passYn == 'Y') score += 2.5;
     }
-
-    printWrittenResultFile(score, loginUser);
+    getchar();
+    printWrittenResultFile(score, loginUser, start_time);
 }
 
 void practicalTest(User *loginUser) {
@@ -428,6 +489,7 @@ void practicalTest(User *loginUser) {
 
     while (1) {
         system("clear");
+        printf(" 현재 로그인된 아이디 : %s\n", loginUser->id);
         printMap(map, &userCar);
         printStatus(userCar, course);
         moveUserCar(map, &userCar);
@@ -535,16 +597,18 @@ void wrongAnswerNote(User *loginUser){
 		}
 
 		if (passYn == 'Y') {
-			printf("정답!\n");
+			printf("정답입니다!\n");
 			printf("삭제하시겠습니까?\n");
 			fscanf(stdin, "%s", result);
 
 			if (toupper(result[0]) == 'Y') {
 				wrong[i].useYn = 'N';
+			    printf("삭제되었습니다.\n");
+			    sleep(1);
 			}
 		} else {
-			printf("오답!\n");
-
+			printf("오답입니다!\n");
+		    sleep(1);
 		}
 		i++;
 	}
@@ -583,7 +647,7 @@ void testResult(User *loginUser)
     }
 
     system("clear");
-    printf("현재 로그인된 아이디 : %s\n", loginUser->id);
+    printf(" 현재 로그인된 아이디 : %s\n", loginUser->id);
     printf("+-------------------- 시 험 합 격 여 부 ---------------------+\n");
     printf("  구분  |      일시      |  점수  |  합격여부  \n");
 
@@ -711,7 +775,14 @@ void selQuestion(char num[], Question *qst) {
     printf("\n");
 }
 
-void printWrittenResultFile(double score, User *loginUser) {
+void printWrittenResultFile(double score, User *loginUser, time_t start_time) {
+    system("clear");
+    printf(" 현재 로그인된 아이디 : %s\n", loginUser -> id);
+    printf("+-----------------------------------------------------------+\n");
+    checkWrittenTime(start_time);
+    printf(" 점수 : %.1f\n", score);
+    printf("+-----------------------------------------------------------+\n");
+
     char filePath[100] = "";
     strcat(filePath, "/home/lms/CLionProjects/cteam/dataFile/");
     strcat(filePath, loginUser -> id);
@@ -724,10 +795,13 @@ void printWrittenResultFile(double score, User *loginUser) {
     }
     //실기,24.11.27 09:34,50,불합격
     char date[30];
-    getTime(date, "%d.%d.%d %d:%d");
+    getTime(date, "%02d.%02d.%02d %02d:%02d");
     fprintf(fp, "필기,%s,%.1f,%s\n", date, score, (int) score >= 70 ? "합격" : "불합격");
 
     fclose(fp);
+
+    printf("메뉴로 돌아가시려면 아무키나 입력해주세요 : ");
+    getchar();
 }
 
 void setMap(char map[ROW][COL]) {
@@ -1316,7 +1390,7 @@ void printPracticalResultFile(Car *car, User *loginUser){
     }
     //실기,24.11.27 09:34,50,불합격
     char date[30];
-    getTime(date, "%d.%d.%d %d:%d");
+    getTime(date, "%02d.%02d.%02d %02d:%02d");
     fprintf(fp, "실기,%s,%d,%s\n", date, car -> score, car -> score >= 70 ? "합격" : "불합격");
 
     fclose(fp);
