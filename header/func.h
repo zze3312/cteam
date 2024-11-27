@@ -1,86 +1,192 @@
-void mainMenu(User *loginUser)
-{
-	int mainMenuNum;
-	printf("+-----------------------------------------------------------+\n");
-	printf("|                  브고트 운전면허 프로그램                 |\n");
-	printf("+-----------------------------------------------------------+\n");
-	printf(" 1. 로그인\n");
-	printf(" 2. 회원가입\n");
-	printf(" 3. 아이디/비밀번호 찾기\n");
-	printf(" 4. 종료\n");
-	printf("+-----------------------------------------------------------+\n");
-	printf(" 진행하실 번호를 입력해주세요: ");
-	scanf("%d", &mainMenuNum);
+void echoOff(){
+  	struct termios new_termios;
 
-	switch(mainMenuNum)
-	{
-		case 1: // 로그인
-			system("clear");
-		    userLogin(loginUser);
-		    if (strlen(loginUser -> id) != 0)
-		    {
-			    printf(" %s님의 접속을 환영합니다.\n", loginUser -> id);
-			    sleep(1);
-			    system("clear");
-			    subMenu(loginUser);
-		    }
-		    else
-		    {
-			    printf(" 가입되지 않은 정보입니다.\n");
-		    }
-		break;
-		case 2: // 회원가입
-			userInfoAdd();
-		break;
-		case 3: // 가입내역조회
-			userInfoFind();
-		break;
-		case 4: // 종료
-			printf(" 브고트 운전면허 프로그램을 종료합니다.\n");
-		exit(0); // 프로그램 종료
-		default:
-			printf(" 잘못된 입력입니다. 다시 선택해주세요.\n");
-		break;
-	}
+    tcgetattr(STDIN_FILENO, &orig_termios);
+    new_termios = orig_termios;
+    new_termios.c_lflag &= ~ICANON;    // non-canonical input 설정
+    new_termios.c_lflag &= ~ECHO;      // 입력 시 터미널에 보이지 않게
+    new_termios.c_cc[VMIN] = 1;        // 최소 입력 버퍼 크기
+    new_termios.c_cc[VTIME] = 0;       //버퍼 비우는 시간 (timeout)
+    tcsetattr(STDIN_FILENO, TCSANOW, &new_termios);
+
+    return;
 }
 
-void userLogin(User *loginUser) // 사용자 입력 요청 - 로그인 : 아이디 id, 비번 pw
+void echoOn(){
+	tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios);
+    return;
+}
+
+void clearBuffer()
 {
-    char userId[USER_SIZE];
-	char userPwd[USER_SIZE];
+    while (getchar() != '\n');
+}
+
+void getTime(char *date, char format[15]){
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+
+    sprintf(date, format,  tm.tm_year - 100, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min);
+}
+
+void mainMenu(){
+    int mainMenuNum;
+    printf("+-----------------------------------------------------------+\n");
+    printf("|                  브고트 운전면허 프로그램                 |\n");
+    printf("+-----------------------------------------------------------+\n");
+    printf(" 1. 로그인\n");
+    printf(" 2. 회원가입\n");
+    printf(" 3. 아이디/비밀번호 찾기\n");
+    printf(" 4. 종료\n");
+    printf("+-----------------------------------------------------------+\n");
+    printf(" 진행하실 번호를 입력해주세요: ");
+    scanf("%d", &mainMenuNum);
+
+    switch(mainMenuNum)
+    {
+        case 1: // 로그인
+            User loginUser = {"","","","",""};
+        system("clear");
+        userLogin(&loginUser);
+        if (strlen(loginUser.id) != 0)
+        {
+            printf(" %s님의 접속을 환영합니다.\n", loginUser.id);
+            sleep(1);
+            system("clear");
+            subMenu(&loginUser);
+        }
+        else
+        {
+            printf(" 가입되지 않은 정보입니다.\n");
+        }
+        break;
+        case 2: // 회원가입
+            userInfoAdd();
+        break;
+        case 3: // 가입내역조회
+            userInfoFind();
+        break;
+        case 4: // 종료
+            printf(" 브고트 운전면허 프로그램을 종료합니다.\n");
+        exit(0); // 프로그램 종료
+        default:
+            printf(" 잘못된 입력입니다. 다시 선택해주세요.\n");
+        break;
+    }
+
+}
+
+int subMenu(User *loginUser)
+{
+    if (strlen(loginUser -> id) == 0)
+    {
+        printf(" 로그인된 정보가 없습니다.\n");
+        sleep(1);
+        return 0;
+    }
+
+    while(1)
+    {
+        system("clear");
+        printf(" 현재 로그인된 아이디 : %s\n", loginUser -> id);
+        printf("+--------------------- 사 용 자 메 뉴 ----------------------+\n");
+        printf(" 1. 모의테스트\n");
+        printf(" 2. 실전테스트(필기)\n");
+        printf(" 3. 실기시험 - 도로주행시험\n");
+        printf(" 4. 시험합격여부\n");
+        printf(" 5. 오답노트\n");
+        printf(" 6. 로그아웃\n");
+        printf("+-----------------------------------------------------------+\n");
+        printf(" 진행하실 번호를 입력해주세요: ");
+
+        int subMenuNum;
+        scanf("%d", &subMenuNum);
+        clearBuffer();
+
+        if (subMenuNum == 1) // 모의테스트
+        {
+            mockTest(loginUser);
+        }
+        else if (subMenuNum == 2) // 실전테스트(필기)
+        {
+            writtenTest(loginUser);
+        }
+        else if (subMenuNum == 3) // 실기시험 - 도로주행시험
+        {
+            practicalTest(loginUser);
+            echoOn();
+        }
+        else if (subMenuNum == 4) // 시험합격여부
+        {
+            printf(" 시험합격여부 실행\n");
+        }
+        else if (subMenuNum == 5) // 오답노트
+        {
+            wrongAnswerNote(loginUser);
+        }
+        else if (subMenuNum == 6) // 로그아웃
+        {
+            strcpy(loginUser -> name, "\0");
+            strcpy(loginUser -> birth, "\0");
+            strcpy(loginUser -> tel, "\0");
+            strcpy(loginUser -> id, "\0");
+            strcpy(loginUser -> pwd, "\0");
+            printf(" 로그아웃 합니다.\n");
+
+            break;
+        }
+        else
+        {
+            printf(" 잘못된 입력입니다. 다시 선택해주세요.\n");
+        }
+    }
+}
+
+void userInfoFind()
+{
+	char userName[USER_SIZE];
+	char userTel[USER_SIZE];
 	char line[STRING_SIZE];
-	User tempUser;
+	User userInfo;
+	int found = 0;
 
-	printf("+------------------------ 로 그 인 -------------------------+\n"); clearBuffer();
-	fputs(" ID : ", stdout); fgets(userId, sizeof(userId), stdin);
-	strcpy(strstr(userId, "\n"),"\0");
-    fputs(" Password : ", stdout); fgets(userPwd, sizeof(userPwd), stdin);
-	strcpy(strstr(userPwd, "\n"),"\0");
+	clearBuffer();
+	printf("+------------------- 아이디/비밀번호 찾기 --------------------+\n");
+	printf(" 가입하신 이름과 휴대폰번호를 입력해주세요.\n");
+	fputs(" 이름 : ", stdout); fgets(userName, sizeof(userName), stdin);
+	strcpy(strstr(userName, "\n"),"\0");
 
+	fputs(" 휴대폰번호 : ", stdout); fgets(userTel, sizeof(userTel), stdin);
+	strcpy(strstr(userTel, "\n"),"\0");
 	FILE * fp = fopen(FILE_LOGIN, "rt");
 	if (fp == NULL)
 	{
-		printf(" 회원정보 파일이 없습니다. 관리자에게 문의해주세요.\n");
+		printf(" 가입된 내역이 없습니다. 회원가입을 진행해주세요.\n");
+		return;
 	}
-	while(fgets(line, sizeof(line), fp))
+
+	while (fgets(line, sizeof(line), fp))
 	{
-		strcpy(tempUser.name, strtok(line, ",")); // 데이터 구분
-		strcpy(tempUser.birth, strtok(NULL, ","));
-		strcpy(tempUser.tel, strtok(NULL, ","));
-		strcpy(tempUser.id, strtok(NULL, ","));
-		strcpy(tempUser.pwd, strtok(NULL, "\n"));
+		strcpy(userInfo.name,strtok(line, ","));
+		strcpy(userInfo.birth, strtok(NULL, ","));
+		strcpy(userInfo.tel, strtok(NULL, ","));
+		strcpy(userInfo.id, strtok(NULL, ","));
+		strcpy(userInfo.pwd, strtok(NULL, "\n"));
 
-		if (strcmp(tempUser.id, userId) == 0 && strcmp(tempUser.pwd, userPwd) == 0) // tempUser(작성한 id/pwd)와 userId(회원가입 id/pwd)가 동일할 경우
+		if (strcmp(userInfo.name, userName) == 0 && strcmp(userInfo.tel, userTel) == 0)
 		{
-			strcpy(loginUser -> name, tempUser.name);
-			strcpy(loginUser -> birth, tempUser.birth);
-			strcpy(loginUser -> tel, tempUser.tel);
-			strcpy(loginUser -> id, tempUser.id);
-			strcpy(loginUser -> pwd, tempUser.pwd);
-
-			printf(" %s : 로그인에 성공하셨습니다\n", loginUser -> id);
-            break;
+			printf("+------------------- 회원 가입 정보 --------------------+\n");
+			printf(" 이름 : %s\n", userInfo.name);
+			printf(" 생년월일 : %s\n", userInfo.birth);
+			printf(" 휴대폰번호 : %s\n", userInfo.tel);
+			printf(" ID : %s\n", userInfo.id);
+			printf(" PWD : %s\n", userInfo.pwd);
+			found = 1;
 		}
+	}
+	if (!found)
+	{
+		printf(" 해당 정보로 가입된 사용자를 찾을 수 없습니다.\n");
 	}
 	fclose(fp);
 }
@@ -159,124 +265,302 @@ void userInfoAdd()
 	}
 }
 
-void userInfoFind()
+void userLogin(User *loginUser) // 사용자 입력 요청 - 로그인 : 아이디 id, 비번 pw
 {
-	char userName[USER_SIZE];
-	char userTel[USER_SIZE];
+    char userId[USER_SIZE];
+    char userPwd[USER_SIZE];
+    char line[STRING_SIZE];
+    User tempUser;
+
+    printf("+------------------------ 로 그 인 -------------------------+\n"); clearBuffer();
+    fputs(" ID : ", stdout); fgets(userId, sizeof(userId), stdin);
+    strcpy(strstr(userId, "\n"),"\0");
+    fputs(" Password : ", stdout); fgets(userPwd, sizeof(userPwd), stdin);
+    strcpy(strstr(userPwd, "\n"),"\0");
+
+    FILE * fp = fopen(FILE_LOGIN, "rt");
+    if (fp == NULL)
+    {
+        printf(" 회원정보 파일이 없습니다. 관리자에게 문의해주세요.\n");
+    }
+    while(fgets(line, sizeof(line), fp))
+    {
+        strcpy(tempUser.name, strtok(line, ",")); // 데이터 구분
+        strcpy(tempUser.birth, strtok(NULL, ","));
+        strcpy(tempUser.tel, strtok(NULL, ","));
+        strcpy(tempUser.id, strtok(NULL, ","));
+        strcpy(tempUser.pwd, strtok(NULL, "\n"));
+
+        if (strcmp(tempUser.id, userId) == 0 && strcmp(tempUser.pwd, userPwd) == 0) // tempUser(작성한 id/pwd)와 userId(회원가입 id/pwd)가 동일할 경우
+        {
+            strcpy(loginUser -> name, tempUser.name);
+            strcpy(loginUser -> birth, tempUser.birth);
+            strcpy(loginUser -> tel, tempUser.tel);
+            strcpy(loginUser -> id, tempUser.id);
+            strcpy(loginUser -> pwd, tempUser.pwd);
+
+            printf(" %s : 로그인에 성공하셨습니다\n", loginUser -> id);
+            break;
+        }
+    }
+    fclose(fp);
+}
+
+void mockTest(User *loginUser) {
+    for (int i = 0; i < 40; i++){
+        char selNum[5];
+        int randomNum;
+        while (1){
+            randomNum = rand() % 1000 + 1;
+            if(randomNum != 292 && randomNum != 569 && !(randomNum >=681 && randomNum <= 865)){
+                break;
+            }
+        }
+
+        sprintf(selNum, "%d", randomNum);
+
+        Question qst;
+        selQuestion(selNum, &qst);
+
+        char result[2] = "";
+        printf("답 입력(q 입력 시 종료) : ");
+        fscanf(stdin, "%s", result);
+
+        if(result[0] == 'q'){
+            break;
+        }
+        char passYn = 'N';
+        for (int i = 0; i < strlen(qst.correct); i++) {
+            if (qst.correct[i] == result[0]) {
+                passYn = 'Y';
+                break;
+            }
+        }
+
+        if (passYn == 'Y') printf("정답!\n");
+        else {
+            char date[30] = "";
+            char fileName[100] = "";
+            printf("오답!\n");
+            getTime(date, "_%d%d%d_%d%d");
+
+            strcat(fileName, "/home/lms/CLionProjects/cteam/dataFile/");
+            strcat(fileName, loginUser -> id);
+            strcat(fileName, "/");
+
+            strcat(fileName, "WrongNote");
+            strcat(fileName, date);
+            strcat(fileName, ".txt");
+
+            FILE *fp = fopen(fileName, "at");
+            //문제번호,사용여부
+            fprintf(fp, "%s,\n", qst.questionNumber);
+            fclose(fp);
+        }
+    }
+}
+
+void writtenTest(User *loginUser) {
+
+    Question questionList[40];
+    Question userInputList[40];
+    int randomNum = 0;
+
+    for (int i = 0; i < 40; i++) {
+        strcpy(questionList[i].questionNumber, "");
+        strcpy(questionList[i].correct, "");
+        strcpy(userInputList[i].correct, "");
+    }
+
+    for(int i = 0; i < 40; i++) {
+        while (1) {
+            randomNum = rand() % 1000 + 1;
+            for (int j = 0; j < i; j++){
+                if (questionList[i].questionNumber == questionList[j].questionNumber) {
+                    i--;
+                    continue;
+                }
+            }
+            if(randomNum != 292 && randomNum != 569 && !(randomNum >=681 && randomNum <= 865)){
+                break;
+            }
+        }
+        sprintf(questionList[i].questionNumber, "%d", randomNum);
+    }
+
+    for (int i = 0; i < 40; i++) {
+        system("clear");
+        selQuestion(questionList[i].questionNumber, &questionList[i]);
+
+        printf("답 입력 : ");
+        fscanf(stdin, "%s", userInputList[i].correct);
+    }
+
+    double score = 0.0;
+
+    for (int i = 0; i < 40; i++) {
+        char passYn = 'N';
+        for (int j = 0; j < strlen(questionList[i].correct); j++) {
+            if (questionList[i].correct[j] == userInputList[i].correct[0]) {
+                passYn = 'Y';
+                break;
+            }
+        }
+        if (passYn == 'Y') score += 2.5;
+    }
+
+    printWrittenResultFile(score, loginUser);
+}
+
+void practicalTest(User *loginUser) {
+
+    echoOff();
+
+    char map[ROW][COL] = {};
+    char course = rand() % 4 + 'A';
+
+    Car userCar = {OFF, OFF, 0.0, 100, OFF, OFF, 'W'};
+    userCar.turn = 1;
+    CrossWolk cws[4];
+    PersonAndCar psn[4];
+    PersonAndCar car[4];
+
+    setMap(map);
+    setObstacle(cws, psn, car);
+    setCarPosition(map, &userCar);
+
+    while (1) {
+        system("clear");
+        printMap(map, &userCar);
+        printStatus(userCar, course);
+        moveUserCar(map, &userCar);
+        if ( userCar.inputKey == KEY_GO || userCar.inputKey == KEY_ACCEL || userCar.inputKey == KEY_BREAK ) {
+            moveCar(map, car, userCar.turn);
+            movePerson(map, psn, userCar.turn);
+            for (int i = 0; i < sizeof(car) / sizeof(car[0]); i++) {
+                if (car[i].beforeBlock == USER_CAR_ICON_NUM){
+                    userCar.failYn = ON;
+                    userCar.failLog[userCar.failCnt] = FALL_REASON_8;
+                    userCar.failCnt++;
+                }
+            }
+        }
+        checkCrosswalk(cws, &userCar);
+        if (userCar.score < 70 || userCar.failYn == ON) {
+            userCar.failYn = ON;
+            break;
+        }
+        if (userCar.beforeBlock == 'F'){
+            break;
+        }
+    }
+
+    printPracticalResultFile(&userCar, loginUser);
+
+    sleep(3);
+}
+
+void wrongAnswerNote(User *loginUser){
+	Result list[10];
+	char filePath[100] = "";
+	char fileName[30] = "";
+	strcat(filePath, "/home/lms/CLionProjects/cteam/dataFile/");
+	strcat(filePath, loginUser -> id);
+	strcat(filePath, "/");
+
+	printf("+----------------------- 오 답 노 트 ------------------------+\n");
+	printf("  회차  |       일시       |   제출자   \n");
+
+	int i = 0;
+
+	DIR *dp = opendir(filePath);
+	struct dirent *dir;
+
+	if(dp == NULL){
+		fprintf(stderr,"directory open error\n");
+		exit(-1);
+	}
+
+	while((dir = readdir(dp)) != NULL || i >= 10){
+		if(dir->d_ino == 0 || dir->d_name[0] == '.' || dir->d_name[0] != 'W') continue;
+		strcpy(list[i].fileName, dir->d_name);
+		printf("%5d      ", i + 1);
+		strcpy(fileName, strstr(dir->d_name, "2"));
+		strcpy(strstr(fileName, "."), "\0");
+		printf("%s       ", fileName);
+		printf("%s\n",loginUser -> id); //제출자
+		i++;
+	}
+	closedir(dp);
+
+	printf("+----------------------------------------------------------+\n");
+	printf("풀이하실 회차를 선택해주세요 : ");
+	int userInput = fgetc(stdin) - '0';
+	strcat(filePath, list[userInput - 1].fileName);
+	FILE *fp = fopen(filePath, "rt");
+	if (fp == NULL) {
+		printf("오답노트 파일이 없습니다.\n");
+	}
+	Result wrong[40];
+
+    for(i = 0; i < 40; i++){
+        strcpy(wrong[i].fileName, "");
+        strcpy(wrong[i].question.questionNumber, "");
+        wrong[i].useYn = NULL;
+        strcpy(wrong[i].question.correct, "");
+    }
+	i = 0;
 	char line[STRING_SIZE];
-	User userInfo;
-	int found = 0;
-
-	clearBuffer();
-	printf("+------------------- 아이디/비밀번호 찾기 --------------------+\n");
-	printf(" 가입하신 이름과 휴대폰번호를 입력해주세요.\n");
-	fputs(" 이름 : ", stdout); fgets(userName, sizeof(userName), stdin);
-	strcpy(strstr(userName, "\n"),"\0");
-
-	fputs(" 휴대폰번호 : ", stdout); fgets(userTel, sizeof(userTel), stdin);
-	strcpy(strstr(userTel, "\n"),"\0");
-	FILE * fp = fopen(FILE_LOGIN, "rt");
-	if (fp == NULL)
-	{
-		printf(" 가입된 내역이 없습니다. 회원가입을 진행해주세요.\n");
-		return;
-	}
-
-	while (fgets(line, sizeof(line), fp))
-	{
-		strcpy(userInfo.name,strtok(line, ","));
-		strcpy(userInfo.birth, strtok(NULL, ","));
-		strcpy(userInfo.tel, strtok(NULL, ","));
-		strcpy(userInfo.id, strtok(NULL, ","));
-		strcpy(userInfo.pwd, strtok(NULL, "\n"));
-
-		if (strcmp(userInfo.name, userName) == 0 && strcmp(userInfo.tel, userTel) == 0)
-		{
-			printf("+------------------- 회원 가입 정보 --------------------+\n");
-			printf(" 이름 : %s\n", userInfo.name);
-			printf(" 생년월일 : %s\n", userInfo.birth);
-			printf(" 휴대폰번호 : %s\n", userInfo.tel);
-			printf(" ID : %s\n", userInfo.id);
-			printf(" PWD : %s\n", userInfo.pwd);
-			found = 1;
-		}
-	}
-	if (!found)
-	{
-		printf(" 해당 정보로 가입된 사용자를 찾을 수 없습니다.\n");
+	while (fgets(line, STRING_SIZE, fp) != NULL) {
+		strcpy(wrong[i].question.questionNumber, strtok(line, ","));
+		wrong[i].useYn = 'Y';
+		i++;
 	}
 	fclose(fp);
-}
 
-int subMenu(User *loginUser)
-{
-    if (strlen(loginUser -> id) == 0)
-	{
-		printf(" 로그인된 정보가 없습니다.\n");
-		sleep(1);
-		return 0;
+	i = 0;
+	while (strcmp(wrong[i].question.questionNumber, "") != 0) {
+		//문제불러오기
+		selQuestion(wrong[i].question.questionNumber, &(wrong[i].question));
+
+		char result[2] = "";
+		printf("답 입력 : ");
+		fscanf(stdin, "%s", result);
+		char passYn = 'N';
+        printf("strlen(wrong[i].question.correct) : %d\n", strlen(wrong[i].question.correct));
+		for (int j = 0; j < strlen(wrong[i].question.correct); j++) {
+			if (wrong[i].question.correct[j] == result[0]) {
+				passYn = 'Y';
+				break;
+			}
+		}
+
+		if (passYn == 'Y') {
+			printf("정답!\n");
+			printf("삭제하시겠습니까?\n");
+			fscanf(stdin, "%s", result);
+
+			if (toupper(result[0]) == 'Y') {
+				wrong[i].useYn = 'N';
+			}
+		} else {
+			printf("오답!\n");
+		}
+		i++;
 	}
 
-	while(1)
-	{
-		system("clear");
-	    printf(" 현재 로그인된 아이디 : %s\n", loginUser -> id);
-	    printf("+--------------------- 사 용 자 메 뉴 ----------------------+\n");
-	    printf(" 1. 모의테스트\n");
-	    printf(" 2. 실전테스트(필기)\n");
-	    printf(" 3. 실기시험 - 도로주행시험\n");
-	    printf(" 4. 시험합격여부\n");
-	    printf(" 5. 오답노트\n");
-	    printf(" 6. 로그아웃\n");
-	    printf("+-----------------------------------------------------------+\n");
-        printf(" 진행하실 번호를 입력해주세요: ");
-
-		int subMenuNum;
-		scanf("%d", &subMenuNum);
-		clearBuffer();
-
-		if (subMenuNum == 1) // 모의테스트
-		{
-		    mockTest(loginUser);
-		}
-		else if (subMenuNum == 2) // 실전테스트(필기)
-		{
-			printf(" 실전테스트 실행\n");
-		}
-		else if (subMenuNum == 3) // 실기시험 - 도로주행시험
-		{
-		    startTest(loginUser);
-            echoOn();
-		}
-		else if (subMenuNum == 4) // 시험합격여부
-		{
-			printf(" 시험합격여부 실행\n");
-		}
-		else if (subMenuNum == 5) // 오답노트
-		{
-			wrongAnswerNote(loginUser);
-		}
-		else if (subMenuNum == 6) // 로그아웃
-		{
-			strcpy(loginUser -> name, "\0");
-			strcpy(loginUser -> birth, "\0");
-			strcpy(loginUser -> tel, "\0");
-			strcpy(loginUser -> id, "\0");
-			strcpy(loginUser -> pwd, "\0");
-			printf(" 로그아웃 합니다.\n");
-
-			break;
-		}
-		else
-		{
-			printf(" 잘못된 입력입니다. 다시 선택해주세요.\n");
-		}
+	FILE *fp2 = fopen(filePath, "wt");
+	if (fp2 == NULL) {
+		printf("잘못된 파일입니다.\n");
 	}
-}
-
-void clearBuffer()
-{
-    while (getchar() != '\n');
+	i = 0;
+	while (strcmp(wrong[i].question.questionNumber, "")) {
+		if (wrong[i].useYn == 'Y') {
+			fprintf(fp2, "%s,\n", wrong[i].question.questionNumber);
+		}
+        i++;
+	}
+	fclose(fp2);
 }
 
 void selQuestion(char num[], Question *qst) {
@@ -381,6 +665,25 @@ void selQuestion(char num[], Question *qst) {
     strcpy(qst->correct, question.correct);
 
     printf("\n");
+}
+
+void printWrittenResultFile(double score, User *loginUser) {
+    char filePath[100] = "";
+    strcat(filePath, "/home/lms/CLionProjects/cteam/dataFile/");
+    strcat(filePath, loginUser -> id);
+    strcat(filePath, "/TestResult.txt");
+
+    FILE *fp = fopen(filePath, "at");
+
+    if (fp == NULL) {
+        printf("파일을 불러오는데 실패하였습니다.\n");
+    }
+    //실기,24.11.27 09:34,50,불합격
+    char date[30];
+    getTime(date, "%d.%d.%d %d:%d");
+    fprintf(fp, "필기,%s,%.1f,%s\n", date, score, (int) score >= 70 ? "합격" : "불합격");
+
+    fclose(fp);
 }
 
 void setMap(char map[ROW][COL]) {
@@ -907,56 +1210,15 @@ void printStatus(Car car, char course) {
     }
 }
 
-void printFailResult(Car *car) {
+void printPracticalResultFile(Car *car, User *loginUser){
     printf("===================================================================================================================================================================\n");
-    printf("이번실기 시험에서는 아쉽게 탈락하셨습니다.\n");
-    printf("아래 감점사항을 확인하시고 다음 시험에서는 좋은성적을 받기를 바랍니다.\n");
-    printf("===================================================================================================================================================================\n");
-    printf("[ 감점로그 (현재점수 : %d) ] \n", car -> score);
-    for (int i = 0; i < sizeof(car -> failLog) / sizeof(car -> failLog[0]); i++) {
-        if (car -> failLog[i] == 0) break;
-        printf("%d. ", i + 1);
-        switch (car -> failLog[i]) {
-            case FAIL_REASON_1:
-                printf("좌회전 깜빡이 없음 : -10\n");
-            break;
-            case FAIL_REASON_2:
-                printf("우회전 깜빡이 없음 : -10\n");
-            break;
-            case FAIL_REASON_3:
-                printf("좌측 차선변경 깜빡이 없음 : -10\n");
-            break;
-            case FAIL_REASON_4:
-                printf("우측 차선변경 깜빡이 없음 : -10\n");
-            break;
-            case FAIL_REASON_5:
-                printf("코스이탈 : 실격\n");
-            break;
-            case FAIL_REASON_6:
-                printf("역주행 : 실격\n");
-            break;
-            case FAIL_REASON_7:
-                printf("신호위반 : 실격\n");
-            break;
-            case FALL_REASON_8:
-                printf("사고 : 실격\n");
-            break;
-            case FALL_REASON_9:
-                printf("감속 없이 시동 끔 : -20\n");
-            break;
-            case FALL_REASON_10:
-                printf("중앙선 침범 : 실격\n");
-            break;
-        }
+    if (car -> score < 70){
+        printf("이번실기 시험에서는 아쉽게 탈락하셨습니다.\n");
+        printf("아래 감점사항을 확인하시고 다음 시험에서는 좋은성적을 받기를 바랍니다.\n");
+    }else{
+        printf("축하합니다. 실기시험에 합격하셨습니다.\n");
+        printf("아래 감점사항들은 앞으로 운전하는데 조심부탁드립니다.\n");
     }
-    printf("===================================================================================================================================================================\n");
-}
-
-void printSuccResult(Car *car) {
-    system("clear");
-    printf("===================================================================================================================================================================\n");
-    printf("축하합니다. 실기시험에 합격하셨습니다.\n");
-    printf("아래 감점사항들은 앞으로 운전하는데 조심부탁드립니다.\n");
     printf("===================================================================================================================================================================\n");
     printf("[ 감점로그 (현재점수 : %d) ] \n", car -> score);
     for (int i = 0; i < sizeof(car -> failLog) / sizeof(car -> failLog[0]); i++) {
@@ -997,125 +1259,7 @@ void printSuccResult(Car *car) {
     }
     printf("===================================================================================================================================================================\n");
 
-}
 
-void startTest(User *loginUser) {
-
-	echoOff();
-
-    char map[ROW][COL] = {};
-    char course = rand() % 4 + 'A';
-
-    Car userCar = {OFF, OFF, 0.0, 100, OFF, OFF, 'W'};
-    userCar.turn = 1;
-    CrossWolk cws[4];
-    PersonAndCar psn[4];
-    PersonAndCar car[4];
-
-    setMap(map);
-    setObstacle(cws, psn, car);
-    setCarPosition(map, &userCar);
-
-    while (1) {
-        system("clear");
-        printMap(map, &userCar);
-        printStatus(userCar, course);
-        moveUserCar(map, &userCar);
-        if ( userCar.inputKey == KEY_GO || userCar.inputKey == KEY_ACCEL || userCar.inputKey == KEY_BREAK ) {
-            moveCar(map, car, userCar.turn);
-            movePerson(map, psn, userCar.turn);
-            for (int i = 0; i < sizeof(car) / sizeof(car[0]); i++) {
-                if (car[i].beforeBlock == USER_CAR_ICON_NUM){
-                    userCar.failYn = ON;
-                    userCar.failLog[userCar.failCnt] = FALL_REASON_8;
-                    userCar.failCnt++;
-                }
-            }
-        }
-        checkCrosswalk(cws, &userCar);
-        if (userCar.score < 70 || userCar.failYn == ON) {
-            userCar.failYn = ON;
-            break;
-        }
-        if (userCar.beforeBlock == 'F'){
-            break;
-        }
-    }
-
-    if (userCar.failYn == ON) {
-        system("clear");
-        printFailResult(&userCar);
-    }else {
-        system("clear");
-        printSuccResult(&userCar);
-    }
-    printResultFile(&userCar, loginUser);
-
-    sleep(3);
-}
-
-void mockTest(User *loginUser) {
-    for (int i = 0; i < 40; i++){
-        char selNum[5];
-        int randomNum;
-        while (1){
-            randomNum = rand() % 1000 + 1;
-            if(randomNum != 292 && randomNum != 569 && !(randomNum >=681 && randomNum <= 865)){
-                break;
-            }
-        }
-
-        sprintf(selNum, "%d", randomNum);
-
-        Question qst;
-        selQuestion(selNum, &qst);
-
-        char result[2] = "";
-        printf("답 입력(q 입력 시 종료) : ");
-        fscanf(stdin, "%s", result);
-
-        if(result[0] == 'q'){
-          break;
-        }
-        char passYn = 'N';
-        for (int i = 0; i < strlen(qst.correct); i++) {
-            if (qst.correct[i] == result[0]) {
-                passYn = 'Y';
-                break;
-            }
-        }
-
-        if (passYn == 'Y') printf("정답!\n");
-        else {
-            char date[30] = "";
-            char fileName[100] = "";
-            printf("오답!\n");
-            getTime(date, "_%d%d%d_%d%d");
-
-            strcat(fileName, "/home/lms/CLionProjects/cteam/dataFile/");
-            strcat(fileName, loginUser -> id);
-            strcat(fileName, "/");
-
-            strcat(fileName, "WrongNote");
-            strcat(fileName, date);
-            strcat(fileName, ".txt");
-
-            FILE *fp = fopen(fileName, "at");
-			//문제번호,사용여부
-            fprintf(fp, "%s,\n", qst.questionNumber);
-            fclose(fp);
-        }
-    }
-}
-
-void getTime(char *date, char format[15]){
-	time_t t = time(NULL);
-	struct tm tm = *localtime(&t);
-
-    sprintf(date, format,  tm.tm_year - 100, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min);
-}
-
-void printResultFile(Car *car, User *loginUser){
     char filePath[100] = "";
     strcat(filePath, "/home/lms/CLionProjects/cteam/dataFile/");
     strcat(filePath, loginUser -> id);
@@ -1132,126 +1276,4 @@ void printResultFile(Car *car, User *loginUser){
     fprintf(fp, "실기,%s,%d,%s\n", date, car -> score, car -> score >= 70 ? "합격" : "불합격");
 
     fclose(fp);
-}
-
-void wrongAnswerNote(User *loginUser){
-	Result list[10];
-	char filePath[100] = "";
-	char fileName[30] = "";
-	strcat(filePath, "/home/lms/CLionProjects/cteam/dataFile/");
-	strcat(filePath, loginUser -> id);
-	strcat(filePath, "/");
-
-	printf("+----------------------- 오 답 노 트 ------------------------+\n");
-	printf("  회차  |       일시       |   제출자   \n");
-
-	int i = 0;
-
-	DIR *dp = opendir(filePath);
-	struct dirent *dir;
-
-	if(dp == NULL){
-		fprintf(stderr,"directory open error\n");
-		exit(-1);
-	}
-
-	while((dir = readdir(dp)) != NULL || i >= 10){
-		if(dir->d_ino == 0 || dir->d_name[0] == '.' || dir->d_name[0] != 'W') continue;
-		strcpy(list[i].fileName, dir->d_name);
-		printf("%5d      ", i + 1);
-		strcpy(fileName, strstr(dir->d_name, "2"));
-		strcpy(strstr(fileName, "."), "\0");
-		printf("%s       ", fileName);
-		printf("%s\n",loginUser -> id); //제출자
-		i++;
-	}
-	closedir(dp);
-
-	printf("+----------------------------------------------------------+\n");
-	printf("풀이하실 회차를 선택해주세요 : ");
-	int userInput = fgetc(stdin) - '0';
-	strcat(filePath, list[userInput - 1].fileName);
-	FILE *fp = fopen(filePath, "rt");
-	if (fp == NULL) {
-		printf("오답노트 파일이 없습니다.\n");
-	}
-	Result wrong[40];
-
-    for(i = 0; i < 40; i++){
-        strcpy(wrong[i].fileName, "");
-        strcpy(wrong[i].question.questionNumber, "");
-        wrong[i].useYn = NULL;
-        strcpy(wrong[i].question.correct, "");
-    }
-	i = 0;
-	char line[STRING_SIZE];
-	while (fgets(line, STRING_SIZE, fp) != NULL) {
-		strcpy(wrong[i].question.questionNumber, strtok(line, ","));
-		wrong[i].useYn = 'Y';
-		i++;
-	}
-	fclose(fp);
-
-	i = 0;
-	while (strcmp(wrong[i].question.questionNumber, "") != 0) {
-		//문제불러오기
-		selQuestion(wrong[i].question.questionNumber, &(wrong[i].question));
-
-		char result[2] = "";
-		printf("답 입력 : ");
-		fscanf(stdin, "%s", result);
-		char passYn = 'N';
-        printf("strlen(wrong[i].question.correct) : %d\n", strlen(wrong[i].question.correct));
-		for (int j = 0; j < strlen(wrong[i].question.correct); j++) {
-			if (wrong[i].question.correct[j] == result[0]) {
-				passYn = 'Y';
-				break;
-			}
-		}
-
-		if (passYn == 'Y') {
-			printf("정답!\n");
-			printf("삭제하시겠습니까?\n");
-			fscanf(stdin, "%s", result);
-
-			if (toupper(result[0]) == 'Y') {
-				wrong[i].useYn = 'N';
-			}
-		} else {
-			printf("오답!\n");
-		}
-		i++;
-	}
-
-	FILE *fp2 = fopen(filePath, "wt");
-	if (fp2 == NULL) {
-		printf("잘못된 파일입니다.\n");
-	}
-	i = 0;
-	while (strcmp(wrong[i].question.questionNumber, "")) {
-		if (wrong[i].useYn == 'Y') {
-			fprintf(fp2, "%s,\n", wrong[i].question.questionNumber);
-		}
-        i++;
-	}
-	fclose(fp2);
-}
-
-void echoOff(){
-  	struct termios new_termios;
-
-    tcgetattr(STDIN_FILENO, &orig_termios);
-    new_termios = orig_termios;
-    new_termios.c_lflag &= ~ICANON;    // non-canonical input 설정
-    new_termios.c_lflag &= ~ECHO;      // 입력 시 터미널에 보이지 않게
-    new_termios.c_cc[VMIN] = 1;        // 최소 입력 버퍼 크기
-    new_termios.c_cc[VTIME] = 0;       //버퍼 비우는 시간 (timeout)
-    tcsetattr(STDIN_FILENO, TCSANOW, &new_termios);
-
-    return;
-}
-
-void echoOn(){
-	tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios);
-    return;
 }

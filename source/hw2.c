@@ -1,50 +1,39 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
-// #include "../header/types.h"
-// #define FILE_DATA "../dataFile/test.csv"
-// #define FILE_WRONG "../dataFile/WrongAnswerNote.txt" // 오답노트
+#include <unistd.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <termios.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <ctype.h>
 
 #include "/home/lms/CLionProjects/cteam/header/types.h"
 #define FILE_DATA "/home/lms/CLionProjects/cteam/dataFile/test.txt"
-#define FILE_WRONG "/home/lms/CLionProjects/cteam/dataFile/WrongAnswerNote.txt" // 오답노트
 
 void selQuestion(char num[], Question *qst);
+
+
+void writtenTest(User *);
+void printWrittenResultFile(double score, User *);
+
 void main() {
-    time_t t = time(NULL);
-    struct tm tm = *localtime(&t);
 
-    char selNum[5];
-    printf("출력할 문제번호를 작성해주세요 : ");
-    scanf("%s", selNum);
-
-    Question qst;
-    selQuestion(selNum, &qst);
-
-    char result[2] = "";
-    printf("답 입력 : ");
-    fscanf(stdin, "%s", result);
-    char passYn = 'N';
-    for (int i = 0; i < strlen(qst.correct); i++) {
-        if (qst.correct[i] == result[0]) {
-            passYn = 'Y';
-            break;
-        }
-    }
-
-    if (passYn == 'Y') printf("정답!\n");
-    else {
-        char buffer[15];
-        printf("오답!\n");
-        sprintf(buffer, "%d.%d.%d",  tm.tm_year - 100, tm.tm_mon + 1, tm.tm_mday);
-
-        FILE *fp = fopen(FILE_WRONG, "wt");
-        //23,2,4,jh123,24.11.26
-
-        fprintf(fp, "%s,%s,%s,%s\n", qst.questionNumber, qst.correct, result, buffer);
-    }
+    printf("\n");
 }
+
+
+
+
+
+
+
+
+
+
 
 void selQuestion(char num[], Question *qst) {
     char line[1000];
@@ -76,8 +65,8 @@ void selQuestion(char num[], Question *qst) {
                 printf("%s\n", strtok(NULL, ","));//3문항
                 printf("%s\n", strtok(NULL, ","));//4문항
                 //printf("%s\n", strtok(NULL, "\n\r"));//답
+                strcpy(question.correct, strtok(NULL, "\n"));
             }
-            strcpy(question.correct, strtok(line, "."));
             i++;
         } else {
             int cnt = 0;

@@ -21,7 +21,6 @@
 #include "/home/lms/CLionProjects/cteam/header/types.h"
 #define FILE_DATA "/home/lms/CLionProjects/cteam/dataFile/test.txt"
 #define FILE_LOGIN "/home/lms/CLionProjects/cteam/dataFile/UserLogin.txt" // 회원정보
-#define FILE_WRONG "/home/lms/CLionProjects/cteam/dataFile/WrongNote" // 오답노트
 #define FILE_MAP "/home/lms/CLionProjects/cteam/dataFile/map.txt"
 
 #define STRING_SIZE 100 // 문자열 길이
@@ -111,35 +110,147 @@ enum failReason {
 
 static struct termios orig_termios;
 
-void mainMenu(User *);
-void userLogin(User *); // 로그인
-void userInfoAdd(); // 회원가입
-void userInfoFind(); // 가입내역조회
-int subMenu(User *); // 메뉴 선택
-void clearBuffer(); // 입력값 비우기
-void selQuestion(char num[], Question *qst);
+/** 자동입력 */
+void echoOff();
 
-void setMap(char [ROW][COL]);
-void setObstacle(CrossWolk *, PersonAndCar *, PersonAndCar *);
-void setCarPosition(char [ROW][COL], Car *);
+/** 엔터 입력 */
+void echoOn();
 
-void moveUserCar(char [ROW][COL], Car *);
-void movePerson(char [ROW][COL], PersonAndCar *, int);
-void moveCar(char [ROW][COL], PersonAndCar *, int);
+/** 버퍼 비우기 */
+void clearBuffer();
 
-void checkCrosswalk(CrossWolk *, Car *);
-
-void printMap(char [ROW][COL], Car *);
-void printStatus(Car, char);
-void printFailResult(Car *);
-void printSuccResult(Car *);
-void printResultFile(Car *, User *);
-
-void startTest(User *);
-void mockTest();
-
+/** 시간가져오기\n
+  * 파라메터
+  *  - 담을 문자열 변수 주소,\n
+  *  - 시간 형식(년, 월, 일, 시, 분)\n
+  *    ex) "%d.%d.%d %d:%d" >> 24.11.27 14:39
+  */
 void getTime(char *, char [15]);
+
+/** 메인메뉴 불러오기 (로그인, 회원가입, 아이디 비번찾기 등) */
+void mainMenu();
+
+//메인메뉴
+/** 서브메뉴 불러오기 (모의테스트, 오답노트, 실기시험 등) */
+int subMenu(User *);
+
+/** 아이디/비밀번호 찾기 */
+void userInfoFind();
+
+/** 회원가입 */
+void userInfoAdd();
+
+/** 로그인\n
+  * 파라메터
+  *  - 로그인된 사용자 정보
+  */
+void userLogin(User *);
+
+//서브메뉴
+/** 모의테스트\n
+  * 파라메터
+  *  - 로그인된 사용자 정보
+  */
+void mockTest(User *);
+
+/** 필기시험\n
+  * 파라메터
+  *  - 로그인된 사용자 정보
+ */
+void writtenTest(User *);
+
+/** 실기시험\n
+  * 파라메터
+  *  - 로그인된 사용자 정보
+  */
+void practicalTest(User *);
+
+/** 오답노트\n
+  * 파라메터
+  *  - 로그인된 사용자 정보
+  */
 void wrongAnswerNote(User *);
 
-void echoOff();
-void echoOn();
+// 필기문제 관련
+/** 문제 불러오기\n
+  * 파라메터
+  *  - 불러올 문제의 번호, 문제 번호와 답이 담길 구조체의 주소값
+  */
+void selQuestion(char num[], Question *qst);
+
+/** 필기시험 합격/불합격시 파일에 내용 저장\n
+  * 파라메터
+  *  - 시험 결과
+  *  - 로그인된 사용자 정보
+  */
+void printWrittenResultFile(double score, User *);
+
+// 실기시험 관련
+/** 초기 맵 셋팅\n
+  * 파라메터
+  *  - 맵 정보를 담을 100 * 101 문자형 배열
+  */
+void setMap(char [ROW][COL]);
+
+/** 초기 횡단보도, 신호등, 사람, 사용자가 아닌 다른 자동차 셋팅\n
+  * 파라메터
+  *  - 횡단보도와 신호등 정보가 담길 CrossWolk 배열,\n
+  *  - 사람 정보가 담길 PersonAndCar 배열,\n
+  *  - 다른 자동차 정보가 담길 PersonAndCar 배열
+  */
+void setObstacle(CrossWolk *, PersonAndCar *, PersonAndCar *);
+
+/** 사용자 자동차 위치 기본셋팅\n
+  * 파라메터
+  *  - 맵 정보가 셋팅된 100 * 101 문자형 배열,\n
+  *  - 사용자 자동차 정보가 담길 구조체의 주소
+  */
+void setCarPosition(char [ROW][COL], Car *);
+
+/** 사용자 자동차 움직임 동작\n
+  * 파라메터
+  *  - 맵 정보가 셋팅된 100 * 101 문자형 배열,\n
+  *  - 사용자 자동차 정보가 담긴 구조체의 주소
+  */
+void moveUserCar(char [ROW][COL], Car *);
+
+/** 맵에 셋팅된 사람 움직임\n
+  * 파라메터
+  *  - 맵 정보가 셋팅된 100 * 101 문자형 배열,\n
+  *  - 사람 정보가 담긴 PersonAndCar 배열
+  */
+void movePerson(char [ROW][COL], PersonAndCar *, int);
+
+/** 맵에 셋팅된 다른 자동차 움직임\n
+  * 파라메터
+  *  - 맵 정보가 셋팅된 100 * 101 문자형 배열,\n
+  *  - 다른 자동차 정보가 담긴 PersonAndCar 배열
+  */
+void moveCar(char [ROW][COL], PersonAndCar *, int);
+
+/** 사용자 신호위반 확인\n
+  * 파라메터
+  *  - 횡단보도와 신호등 정보가 담긴 CrossWolk 배열,\n
+  *  - 사용자 자동차 정보가 담긴 구조체의 주소
+  */
+void checkCrosswalk(CrossWolk *, Car *);
+
+/** 매 턴 셋팅된 맵 출력\n
+  * 파라메터
+  *  - 맵 정보가 셋팅된 100 * 101 문자형 배열,\n
+  *  - 다른 자동차 정보가 담긴 PersonAndCar 배열
+  */
+void printMap(char [ROW][COL], Car *);
+
+/** 매 턴 사용자의 자동차 정보 출력\n
+  * 파라메터
+  *  - 사용자 자동차 정보가 담긴 구조체
+  */
+void printStatus(Car, char);
+
+/** 실기시험 합격/불합격시 파일에 내용 저장\n
+  * 파라메터
+  *  - 사용자 자동차 정보가 담긴 구조체 주소\n
+  *  - 로그인된 사용자 정보
+  */
+void printPracticalResultFile(Car *, User *);
