@@ -54,3 +54,10 @@ typedef struct {
     char beforeBlock;
     char crossYn;
 } PersonAndCar;
+
+typedef struct {
+    char gubun[10];
+    char date[20];
+    char totalScore[10];
+    char result[10];
+} TestResult;

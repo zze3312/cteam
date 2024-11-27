@@ -118,7 +118,7 @@ int subMenu(User *loginUser)
         }
         else if (subMenuNum == 4) // 시험합격여부
         {
-            printf(" 시험합격여부 실행\n");
+            testResult(loginUser);
         }
         else if (subMenuNum == 5) // 오답노트
         {
@@ -142,8 +142,7 @@ int subMenu(User *loginUser)
     }
 }
 
-void userInfoFind()
-{
+void userInfoFind(){
 	char userName[USER_SIZE];
 	char userTel[USER_SIZE];
 	char line[STRING_SIZE];
@@ -191,8 +190,7 @@ void userInfoFind()
 	fclose(fp);
 }
 
-void userInfoAdd()
-{
+void userInfoAdd(){
 	User userInput; // 구조체 호출
 	User tempUser;
 	char flag = 'Y';
@@ -265,8 +263,7 @@ void userInfoAdd()
 	}
 }
 
-void userLogin(User *loginUser) // 사용자 입력 요청 - 로그인 : 아이디 id, 비번 pw
-{
+void userLogin(User *loginUser) {
     char userId[USER_SIZE];
     char userPwd[USER_SIZE];
     char line[STRING_SIZE];
@@ -318,7 +315,7 @@ void mockTest(User *loginUser) {
         }
 
         sprintf(selNum, "%d", randomNum);
-
+        system("clear");
         Question qst;
         selQuestion(selNum, &qst);
 
@@ -468,6 +465,7 @@ void wrongAnswerNote(User *loginUser){
 	strcat(filePath, loginUser -> id);
 	strcat(filePath, "/");
 
+    system("clear");
 	printf("+----------------------- 오 답 노 트 ------------------------+\n");
 	printf("  회차  |       일시       |   제출자   \n");
 
@@ -521,13 +519,14 @@ void wrongAnswerNote(User *loginUser){
 	i = 0;
 	while (strcmp(wrong[i].question.questionNumber, "") != 0) {
 		//문제불러오기
+        system("clear");
 		selQuestion(wrong[i].question.questionNumber, &(wrong[i].question));
 
 		char result[2] = "";
 		printf("답 입력 : ");
 		fscanf(stdin, "%s", result);
 		char passYn = 'N';
-        printf("strlen(wrong[i].question.correct) : %d\n", strlen(wrong[i].question.correct));
+
 		for (int j = 0; j < strlen(wrong[i].question.correct); j++) {
 			if (wrong[i].question.correct[j] == result[0]) {
 				passYn = 'Y';
@@ -545,6 +544,7 @@ void wrongAnswerNote(User *loginUser){
 			}
 		} else {
 			printf("오답!\n");
+
 		}
 		i++;
 	}
@@ -561,6 +561,50 @@ void wrongAnswerNote(User *loginUser){
         i++;
 	}
 	fclose(fp2);
+}
+
+void testResult(User *loginUser)
+{
+    char line[STRING_SIZE];
+    char filePath[100] = "";
+    TestResult tr;
+
+    strcat(filePath, "/home/lms/CLionProjects/cteam/dataFile/");
+    strcat(filePath, loginUser -> id);
+    strcat(filePath, "/TestResult.txt");
+
+    printf("%s\n", filePath);
+
+    FILE * fp = fopen(filePath, "rt");
+    if (fp == NULL)
+    {
+        printf("없음");
+        return;
+    }
+
+    system("clear");
+    printf("현재 로그인된 아이디 : %s\n", loginUser->id);
+    printf("+-------------------- 시 험 합 격 여 부 ---------------------+\n");
+    printf("  구분  |      일시      |  점수  |  합격여부  \n");
+
+    // fgets(line, sizeof(line), fp);
+    // printf("%s", line);
+
+    while (fgets(line, sizeof(line), fp))
+    {
+        strcpy(tr.gubun, strtok(line, ","));
+        printf("  %s    ", tr.gubun);
+        strcpy(tr.date, strtok(NULL, ","));
+        printf("%14s", tr.date);
+        strcpy(tr.totalScore, strtok(NULL, ","));
+        printf("    %4s   ", tr.totalScore);
+        strcpy(tr.result, strtok(NULL, "\n"));
+        printf("   %s\n", tr.result);
+    }
+    printf("+------------------------------------------------------------+\n");
+    fclose(fp);
+    printf("메뉴로 돌아가시려면 아무키나 입력해주세요 : ");
+    getchar();
 }
 
 void selQuestion(char num[], Question *qst) {
@@ -731,13 +775,13 @@ void setObstacle(CrossWolk *cws, PersonAndCar *psn, PersonAndCar *cars) {
 }
 
 void setCarPosition(char map[ROW][COL], Car *cptr) {
-    cptr -> now.row = 28;
-    cptr -> now.col = 58;
+    cptr -> now.row = 70;
+    cptr -> now.col = 82;
 
-    cptr -> before.row = 28;
-    cptr -> before.col = 58;
+    cptr -> before.row = 70;
+    cptr -> before.col = 82;
 
-    cptr -> beforeBlock = MAP_ICON1_NUM;
+    cptr -> beforeBlock = MAP_ICON4_NUM;
 
     map[cptr -> now.row][cptr -> now.col] = USER_CAR_ICON_NUM;
 }

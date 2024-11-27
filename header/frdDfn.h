@@ -171,19 +171,25 @@ void practicalTest(User *);
   */
 void wrongAnswerNote(User *);
 
+/** 시험 결과 출력\n
+  * 파라메터
+  *  - 로그인된 사용자 정보
+  */
+void testResult(User *);
+
 // 필기문제 관련
 /** 문제 불러오기\n
   * 파라메터
   *  - 불러올 문제의 번호, 문제 번호와 답이 담길 구조체의 주소값
   */
-void selQuestion(char num[], Question *qst);
+void selQuestion(char [], Question *);
 
 /** 필기시험 합격/불합격시 파일에 내용 저장\n
   * 파라메터
   *  - 시험 결과
   *  - 로그인된 사용자 정보
   */
-void printWrittenResultFile(double score, User *);
+void printWrittenResultFile(double, User *);
 
 // 실기시험 관련
 /** 초기 맵 셋팅\n
