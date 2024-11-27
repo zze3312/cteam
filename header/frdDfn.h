@@ -129,6 +129,9 @@ void printMap(char [ROW][COL], Car *);
 void printStatus(Car, char);
 void printFailResult(Car *);
 void printSuccResult(Car *);
+void printResultFile(Car *, User *);
 
-void startTest();
+void startTest(User *);
 void mockTest();
+
+void getTime(char *, char [15]);

@@ -247,7 +247,7 @@ int subMenu(User *loginUser)
 		}
 		else if (subMenuNum == 3) // 실기시험 - 도로주행시험
 		{
-		    startTest();
+		    startTest(loginUser);
 		}
 		else if (subMenuNum == 4) // 시험합격여부
 		{
@@ -394,7 +394,7 @@ void setMap(char map[ROW][COL]) {
     }
 
     // '\n'문자 때문에 작성한 길이보다 조금더 불러와야됨
-    fread(map, 1, 11000, fp);
+    fread(map, 1, 10100, fp);
     fclose(fp);
 
 }
@@ -470,13 +470,13 @@ void moveUserCar(char map[ROW][COL], Car *car) {
 
             // 속도 20km/h당 1칸
             if (car -> direction == EAST) {
-                car -> now.col += car -> kph / 20.0;
+                (car -> now.col) += (int)((car -> kph) / 20.0);
             }else if (car -> direction == WEST) {
-                (car -> now.col) -=  car -> kph / 20.0;
+                (car -> now.col) -= (int)((car -> kph) / 20.0);
             }else if (car -> direction == SOUTH) {
-                (car -> now.row) += car -> kph / 20.0;
+                (car -> now.row) += (int)((car -> kph) / 20.0);
             }else if (car -> direction == NORTH) {
-                (car -> now.row) -=  car -> kph / 20.0;
+                (car -> now.row) -= (int)((car -> kph) / 20.0);
             }
         }else if (car -> inputKey == KEY_LEFT) {
             // 좌회전하는데 깜빡이를 깜빡...^^...
@@ -1002,7 +1002,7 @@ void printSuccResult(Car *car) {
 
 }
 
-void startTest() {
+void startTest(User *loginUser) {
 
     struct termios term;
 
@@ -1059,14 +1059,14 @@ void startTest() {
         system("clear");
         printSuccResult(&userCar);
     }
+    printResultFile(&userCar, loginUser);
+
+
     sleep(3);
 }
 
 void mockTest(User *loginUser) {
-    time_t t = time(NULL);
-    struct tm tm = *localtime(&t);
-
-    for (int i = 0; i < 40; i++){
+   for (int i = 0; i < 40; i++){
         char selNum[5];
         int randomNum = rand() % 60 + 2; //TODO : 오류수정 후 숫자 바꾸기
         sprintf(selNum, "%d", randomNum);
@@ -1087,10 +1087,11 @@ void mockTest(User *loginUser) {
 
         if (passYn == 'Y') printf("정답!\n");
         else {
-            char date[30];
+            char date[30] = "";
+            char fileName[100] = "";
             printf("오답!\n");
-            sprintf(date, "_%d%d%d_%d%d",  tm.tm_year - 100, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min);
-			char fileName[100] = "";
+            getTime(date, "_%d%d%d_%d%d");
+
             strcat(fileName, "/home/lms/CLionProjects/cteam/dataFile/");
             strcat(fileName, loginUser -> id);
             strcat(fileName, "/");
@@ -1101,8 +1102,34 @@ void mockTest(User *loginUser) {
 
             FILE *fp = fopen(fileName, "at");
 			//문제번호,사용여부
-            fprintf(fp, "%s,Y\n", qst.questionNumber);
+            fprintf(fp, "%s,\n", qst.questionNumber);
             fclose(fp);
         }
     }
+}
+
+void getTime(char *date, char format[15]){
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+
+    sprintf(date, format,  tm.tm_year - 100, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min);
+}
+
+void printResultFile(Car *car, User *loginUser){
+    char filePath[100] = "";
+    strcat(filePath, "/home/lms/CLionProjects/cteam/dataFile/");
+    strcat(filePath, loginUser -> id);
+    strcat(filePath, "/TestResult.txt");
+
+    FILE *fp = fopen(filePath, "at");
+
+    if (fp == NULL) {
+        printf("파일을 불러오는데 실패하였습니다.\n");
+    }
+    //실기,24.11.27 09:34,50,불합격
+    char date[30];
+    getTime(date, "%d.%d.%d %d:%d");
+    fprintf(fp, "실기,%s,%d,%s", date, car -> score, car -> score >= 70 ? "합격" : "불합격");
+
+    fclose(fp);
 }

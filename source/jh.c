@@ -2,6 +2,7 @@
 #include "../header/types.h"
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <unistd.h>
 #include <termios.h>
@@ -102,6 +103,18 @@ void printStatus(Car, char);
 void printFailResult(Car *);
 void printSuccResult(Car *);
 
+
+void printResultFile(Car *, User *);
+
+
+
+
+
+
+
+
+void getTime(char *date, char format[15]);
+
 void main() {
     srand(time(NULL));
     struct termios term;
@@ -131,9 +144,18 @@ void main() {
         printMap(map, &userCar);
         printStatus(userCar, course);
         moveUserCar(map, &userCar);
+        if ( userCar.inputKey == KEY_GO || userCar.inputKey == KEY_ACCEL || userCar.inputKey == KEY_BREAK ) {
+            moveCar(map, car, userCar.turn);
+            movePerson(map, psn, userCar.turn);
+            for (int i = 0; i < sizeof(car) / sizeof(car[0]); i++) {
+                if (car[i].beforeBlock == USER_CAR_ICON_NUM){
+                    userCar.failYn = ON;
+                    userCar.failLog[userCar.failCnt] = FALL_REASON_8;
+                    userCar.failCnt++;
+                }
+            }
+        }
         checkCrosswalk(cws, &userCar);
-        moveCar(map, car, userCar.turn);
-        movePerson(map, psn, userCar.turn);
         if (userCar.score < 70 || userCar.failYn == ON) {
             userCar.failYn = ON;
             break;
@@ -150,6 +172,9 @@ void main() {
         system("clear");
         printSuccResult(&userCar);
     }
+    //printResultFile(&userCar, loginUser);
+
+
 }
 
 void setMap(char map[ROW][COL]) {
@@ -160,7 +185,7 @@ void setMap(char map[ROW][COL]) {
     }
 
     // '\n'문자 때문에 작성한 길이보다 조금더 불러와야됨
-    fread(map, 1, 11000, fp);
+    fread(map, 1, 10100, fp);
     fclose(fp);
 
 }
@@ -197,13 +222,13 @@ void setObstacle(CrossWolk *cws, PersonAndCar *psn, PersonAndCar *cars) {
 }
 
 void setCarPosition(char map[ROW][COL], Car *cptr) {
-    cptr -> now.row = 70;
-    cptr -> now.col = 82;
+    cptr -> now.row = 28;
+    cptr -> now.col = 58;
 
-    cptr -> before.row = 70;
-    cptr -> before.col = 82;
+    cptr -> before.row = 28;
+    cptr -> before.col = 58;
 
-    cptr -> beforeBlock = MAP_ICON4_NUM;
+    cptr -> beforeBlock = MAP_ICON1_NUM;
 
     map[cptr -> now.row][cptr -> now.col] = USER_CAR_ICON_NUM;
 }
@@ -212,6 +237,7 @@ void moveUserCar(char map[ROW][COL], Car *car) {
     char move;
     // 이동키 받기
     read(0, &move, sizeof(move));
+    car -> inputKey = move;
 
     // 시동안걸려있으면 아무것도 동작안함
     if ((car -> startupYn) == ON) {
@@ -220,14 +246,14 @@ void moveUserCar(char map[ROW][COL], Car *car) {
         car -> before.col = car -> now.col;
 
         map[car -> now.row][car -> now.col] = car -> beforeBlock;
-        if (move == KEY_GO || move == KEY_ACCEL || move == KEY_BREAK) {
+        if ( car -> inputKey == KEY_GO || car -> inputKey == KEY_ACCEL || car -> inputKey == KEY_BREAK ) {
             car -> turn ++; //차가 움직일 때만 턴수 증가
 
-            if (move == KEY_ACCEL) {
+            if (car -> inputKey == KEY_ACCEL) {
                 car -> kph += 20.0;
             }
 
-            if (move == KEY_BREAK) {
+            if (car -> inputKey == KEY_BREAK) {
                 if (car -> kph > 0){
                     car -> kph -= 20.0;
                 }
@@ -235,15 +261,15 @@ void moveUserCar(char map[ROW][COL], Car *car) {
 
             // 속도 20km/h당 1칸
             if (car -> direction == EAST) {
-                car -> now.col += car -> kph / 20.0;
+                (car -> now.col) += (int)((car -> kph) / 20.0);
             }else if (car -> direction == WEST) {
-                (car -> now.col) -=  car -> kph / 20.0;
+                (car -> now.col) -= (int)((car -> kph) / 20.0);
             }else if (car -> direction == SOUTH) {
-                (car -> now.row) += car -> kph / 20.0;
+                (car -> now.row) += (int)((car -> kph) / 20.0);
             }else if (car -> direction == NORTH) {
-                (car -> now.row) -=  car -> kph / 20.0;
+                (car -> now.row) -= (int)((car -> kph) / 20.0);
             }
-        }else if (move == KEY_LEFT) {
+        }else if (car -> inputKey == KEY_LEFT) {
             // 좌회전하는데 깜빡이를 깜빡...^^...
             if (car -> leftLight == OFF) {
                 car -> failLog[car -> failCnt] = FAIL_REASON_1;
@@ -266,7 +292,7 @@ void moveUserCar(char map[ROW][COL], Car *car) {
                 car -> direction = NORTH;
             }
 
-        }else if (move == KEY_RIGHT) {
+        }else if (car -> inputKey == KEY_RIGHT) {
             if (car -> rightLight == OFF) {
                 car -> failLog[car -> failCnt] = FAIL_REASON_2;
                 (car -> failCnt)++;
@@ -285,7 +311,7 @@ void moveUserCar(char map[ROW][COL], Car *car) {
             }else if (car -> direction == EAST) {
                 car -> direction = SOUTH;
             }
-        } else if (move == KEY_LEFT_LIGHT) {
+        } else if (car -> inputKey == KEY_LEFT_LIGHT) {
             // 왼깜빡 키면 오른깜빡 끄기
             if (car -> rightLight == ON) {
                 car -> rightLight = OFF;
@@ -296,7 +322,7 @@ void moveUserCar(char map[ROW][COL], Car *car) {
             }else {
                 car -> leftLight = ON;
             }
-        } else if (move == KEY_RIGHT_LIGHT) {
+        } else if (car -> inputKey == KEY_RIGHT_LIGHT) {
             if (car -> leftLight == ON) {
                 car -> leftLight = OFF;
             }
@@ -306,7 +332,7 @@ void moveUserCar(char map[ROW][COL], Car *car) {
             }else {
                 car -> rightLight = ON;
             }
-        } else if (move == KEY_CHANGE_LINE_LEFT) {
+        } else if (car -> inputKey == KEY_CHANGE_LINE_LEFT) {
             // 차선변경 깜빡이를 깜빡쓰..
             if (car -> leftLight == OFF) {
                 car -> failLog[car -> failCnt] = FAIL_REASON_3;
@@ -328,7 +354,7 @@ void moveUserCar(char map[ROW][COL], Car *car) {
             }else if (car -> direction == EAST) {
                 (car -> now.row)--;
             }
-        } else if (move == KEY_CHANGE_LINE_RIGHT) {
+        } else if (car -> inputKey == KEY_CHANGE_LINE_RIGHT) {
             if (car -> rightLight == OFF) {
                 car -> failLog[car -> failCnt] = FAIL_REASON_4;
                 (car -> failCnt)++;
@@ -347,7 +373,7 @@ void moveUserCar(char map[ROW][COL], Car *car) {
             }else if (car -> direction == EAST) {
                 (car -> now.row)++;
             }
-        } else if (move == KEY_OFF) {
+        } else if (car -> inputKey == KEY_OFF) {
             if ( car -> kph != 0.0) {
                 car -> failLog[car -> failCnt] = FALL_REASON_9;
                 (car -> failCnt)++;
@@ -364,10 +390,11 @@ void moveUserCar(char map[ROW][COL], Car *car) {
             || map[car -> now.row][car -> now.col] == MAP_ICON3_NUM) {
             if (map[car -> now.row][car -> now.col] == MAP_ICON3_NUM){
                 car -> failLog[car -> failCnt] = FALL_REASON_10;
+
             }else {
                 car -> failLog[car -> failCnt] = FALL_REASON_8;
             }
-
+            car -> failYn = ON;
             (car -> failCnt)++;
             car -> score -= 50;
         }
@@ -380,7 +407,7 @@ void moveUserCar(char map[ROW][COL], Car *car) {
     // 시동이 꺼져있으면...
     else {
         // w키가 시동키
-        if (move == KEY_GO ) {
+        if (car -> inputKey == KEY_GO ) {
             car -> startupYn = ON;
             car -> kph = 0.0;
         }
@@ -457,7 +484,7 @@ void moveCar(char map[ROW][COL], PersonAndCar *car, int turn) {
     for (int i = 0; i < 4; i++) {
         map[car[i].pos.row][car[i].pos.col] = car[i].beforeBlock;
 
-        if (turn % 10 >= 5) {
+        if (turn % 10 > 4) {
             if (   (car[i].direction == NORTH && map[car[i].pos.row - 1][car[i].pos.col] == CROSSWALK_NUM)
                 || (car[i].direction == EAST && map[car[i].pos.row][car[i].pos.col + 1] == CROSSWALK_NUM)
                 || (car[i].direction == SOUTH && map[car[i].pos.row + 1][car[i].pos.col] == CROSSWALK_NUM)
@@ -681,6 +708,7 @@ void printFailResult(Car *car) {
     printf("===================================================================================================================================================================\n");
     printf("[ 감점로그 (현재점수 : %d) ] \n", car -> score);
     for (int i = 0; i < sizeof(car -> failLog) / sizeof(car -> failLog[0]); i++) {
+        if (car -> failLog[i] == 0) break;
         printf("%d. ", i + 1);
         switch (car -> failLog[i]) {
             case FAIL_REASON_1:
@@ -716,9 +744,6 @@ void printFailResult(Car *car) {
         }
     }
     printf("===================================================================================================================================================================\n");
-    printf("메인화면으로 돌아가시려면 아무키나 누르세요...");
-    char key;
-    read(0, &key, sizeof(key));
 }
 
 void printSuccResult(Car *car) {
@@ -729,6 +754,7 @@ void printSuccResult(Car *car) {
     printf("===================================================================================================================================================================\n");
     printf("[ 감점로그 (현재점수 : %d) ] \n", car -> score);
     for (int i = 0; i < sizeof(car -> failLog) / sizeof(car -> failLog[0]); i++) {
+        if (car -> failLog[i] == 0) break;
         printf("%d. ", i + 1);
         switch (car -> failLog[i]) {
             case FAIL_REASON_1:
@@ -764,7 +790,37 @@ void printSuccResult(Car *car) {
         }
     }
     printf("===================================================================================================================================================================\n");
-    printf("메인화면으로 돌아가시려면 아무키나 누르세요...");
-    char key;
-    read(0, &key, sizeof(key));
+
+}
+
+void startTest() {
+    sleep(3);
+}
+
+
+
+void printResultFile(Car *car, User *loginUser){
+    char filePath[100] = "";
+    strcat(filePath, "/home/lms/CLionProjects/cteam/dataFile/");
+    strcat(filePath, loginUser -> id);
+    strcat(filePath, "TestResult.txt");
+
+    FILE *fp = fopen(filePath, "at");
+
+    if (fp == NULL) {
+        printf("파일을 불러오는데 실패하였습니다.\n");
+    }
+    //실기,24.11.27 09:34,50,불합격
+    char date[30];
+    getTime(date, "%d.%d.%d %d:%d");
+    fprintf(fp, "실기,%s,%d,%s", date, car -> score, car -> score >= 70 ? "합격" : "불합격");
+
+    fclose(fp);
+}
+
+void getTime(char *date, char format[15]){
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+
+    sprintf(date, format,  tm.tm_year - 100, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min);
 }
