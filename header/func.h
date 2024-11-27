@@ -1129,7 +1129,7 @@ void printResultFile(Car *car, User *loginUser){
     //실기,24.11.27 09:34,50,불합격
     char date[30];
     getTime(date, "%d.%d.%d %d:%d");
-    fprintf(fp, "실기,%s,%d,%s", date, car -> score, car -> score >= 70 ? "합격" : "불합격");
+    fprintf(fp, "실기,%s,%d,%s\n", date, car -> score, car -> score >= 70 ? "합격" : "불합격");
 
     fclose(fp);
 }
