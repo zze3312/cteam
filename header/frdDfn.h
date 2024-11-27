@@ -1,13 +1,15 @@
 #include <stdio.h>
-#include<stdlib.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include<unistd.h>
+#include <unistd.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <termios.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <dirent.h>
+#include <ctype.h>
 
 
 //#include "../header/types.h"
@@ -17,7 +19,7 @@
 //#define FILE_MAP "../dataFile/map.txt"
 
 #include "/home/lms/CLionProjects/cteam/header/types.h"
-#define FILE_DATA "/home/lms/CLionProjects/cteam/dataFile/test.csv"
+#define FILE_DATA "/home/lms/CLionProjects/cteam/dataFile/test.txt"
 #define FILE_LOGIN "/home/lms/CLionProjects/cteam/dataFile/UserLogin.txt" // 회원정보
 #define FILE_WRONG "/home/lms/CLionProjects/cteam/dataFile/WrongNote" // 오답노트
 #define FILE_MAP "/home/lms/CLionProjects/cteam/dataFile/map.txt"
@@ -107,6 +109,8 @@ enum failReason {
     FALL_REASON_10 = 10, // 중앙선 침범
 };
 
+static struct termios orig_termios;
+
 void mainMenu(User *);
 void userLogin(User *); // 로그인
 void userInfoAdd(); // 회원가입
@@ -135,3 +139,7 @@ void startTest(User *);
 void mockTest();
 
 void getTime(char *, char [15]);
+void wrongAnswerNote(User *);
+
+void echoOff();
+void echoOn();

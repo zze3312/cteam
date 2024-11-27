@@ -210,18 +210,7 @@ void userInfoFind()
 
 int subMenu(User *loginUser)
 {
-    system("clear");
-	printf(" 현재 로그인된 아이디 : %s\n", loginUser -> id);
-	printf("+--------------------- 사 용 자 메 뉴 ----------------------+\n");
-	printf(" 1. 모의테스트\n");
-	printf(" 2. 실전테스트(필기)\n");
-	printf(" 3. 실기시험 - 도로주행시험\n");
-	printf(" 4. 시험합격여부\n");
-	printf(" 5. 오답노트\n");
-	printf(" 6. 로그아웃\n");
-	printf("+-----------------------------------------------------------+\n");
-
-	if (strlen(loginUser -> id) == 0)
+    if (strlen(loginUser -> id) == 0)
 	{
 		printf(" 로그인된 정보가 없습니다.\n");
 		sleep(1);
@@ -230,7 +219,16 @@ int subMenu(User *loginUser)
 
 	while(1)
 	{
-
+		system("clear");
+	    printf(" 현재 로그인된 아이디 : %s\n", loginUser -> id);
+	    printf("+--------------------- 사 용 자 메 뉴 ----------------------+\n");
+	    printf(" 1. 모의테스트\n");
+	    printf(" 2. 실전테스트(필기)\n");
+	    printf(" 3. 실기시험 - 도로주행시험\n");
+	    printf(" 4. 시험합격여부\n");
+	    printf(" 5. 오답노트\n");
+	    printf(" 6. 로그아웃\n");
+	    printf("+-----------------------------------------------------------+\n");
         printf(" 진행하실 번호를 입력해주세요: ");
 
 		int subMenuNum;
@@ -248,6 +246,7 @@ int subMenu(User *loginUser)
 		else if (subMenuNum == 3) // 실기시험 - 도로주행시험
 		{
 		    startTest(loginUser);
+            echoOn();
 		}
 		else if (subMenuNum == 4) // 시험합격여부
 		{
@@ -255,7 +254,7 @@ int subMenu(User *loginUser)
 		}
 		else if (subMenuNum == 5) // 오답노트
 		{
-			printf(" 오답노트 실행\n");
+			wrongAnswerNote(loginUser);
 		}
 		else if (subMenuNum == 6) // 로그아웃
 		{
@@ -300,7 +299,6 @@ void selQuestion(char num[], Question *qst) {
             }
         }
         if (token == 'F'){
-            strcpy(question.questionNumber, "");
             strcpy(question.questionNumber,strtok(line, ".")); //문제번호
 
             if (strcmp(question.questionNumber, num) == 0){
@@ -311,9 +309,8 @@ void selQuestion(char num[], Question *qst) {
                 printf("%s\n", strtok(NULL, ","));//3문항
                 printf("%s\n", strtok(NULL, ","));//4문항
                 //printf("%s\n", strtok(NULL, "\n\r"));//답
+                strcpy(question.correct, strtok(NULL, "\n"));
             }
-            strcpy(question.correct, "");
-            strcpy(question.correct, strtok(line, "."));
             i++;
         } else {
             int cnt = 0;
@@ -344,7 +341,7 @@ void selQuestion(char num[], Question *qst) {
 
                 for (int j = 0; j < strlen(temp); j++) {
                     if (temp[j] == '\0') break;
-                    if (temp[j] == '.' || (temp[j] == ',' && (cnt == 0 || cnt == 2)) || temp[j] == '\n') {
+                    if ((temp[j] == '.' && gubun == 0) || (temp[j] == ',' && (cnt == 0 || cnt == 2)) || temp[j] == '\n') {
                         splitYn = 'Y';
                         break;
                     }
@@ -353,7 +350,7 @@ void selQuestion(char num[], Question *qst) {
                     if (gubun == 0) {
                         strcpy(strstr(buffer, "."),"");
                         strcpy(question.questionNumber, buffer);
-                        if (strcmp(question.questionNumber, num) == 0){
+                        if(strcmp(question.questionNumber, num) == 0){
                             printf("%s. ", question.questionNumber);
                         }
                     }else if (gubun == 6) {
@@ -1004,14 +1001,7 @@ void printSuccResult(Car *car) {
 
 void startTest(User *loginUser) {
 
-    struct termios term;
-
-    tcgetattr(STDIN_FILENO, &term);
-    term.c_lflag &= ~ICANON;    // non-canonical input 설정
-    term.c_lflag &= ~ECHO;      // 입력 시 터미널에 보이지 않게
-    term.c_cc[VMIN] = 1;        // 최소 입력 버퍼 크기
-    term.c_cc[VTIME] = 0;       //버퍼 비우는 시간 (timeout)
-    tcsetattr(STDIN_FILENO, TCSANOW, &term);
+	echoOff();
 
     char map[ROW][COL] = {};
     char course = rand() % 4 + 'A';
@@ -1061,22 +1051,32 @@ void startTest(User *loginUser) {
     }
     printResultFile(&userCar, loginUser);
 
-
     sleep(3);
 }
 
 void mockTest(User *loginUser) {
-   for (int i = 0; i < 40; i++){
+    for (int i = 0; i < 40; i++){
         char selNum[5];
-        int randomNum = rand() % 60 + 2; //TODO : 오류수정 후 숫자 바꾸기
+        int randomNum;
+        while (1){
+            randomNum = rand() % 1000 + 1;
+            if(randomNum != 292 && randomNum != 569 && !(randomNum >=681 && randomNum <= 865)){
+                break;
+            }
+        }
+
         sprintf(selNum, "%d", randomNum);
 
         Question qst;
         selQuestion(selNum, &qst);
 
         char result[2] = "";
-        printf("답 입력 : ");
+        printf("답 입력(q 입력 시 종료) : ");
         fscanf(stdin, "%s", result);
+
+        if(result[0] == 'q'){
+          break;
+        }
         char passYn = 'N';
         for (int i = 0; i < strlen(qst.correct); i++) {
             if (qst.correct[i] == result[0]) {
@@ -1132,4 +1132,126 @@ void printResultFile(Car *car, User *loginUser){
     fprintf(fp, "실기,%s,%d,%s\n", date, car -> score, car -> score >= 70 ? "합격" : "불합격");
 
     fclose(fp);
+}
+
+void wrongAnswerNote(User *loginUser){
+	Result list[10];
+	char filePath[100] = "";
+	char fileName[30] = "";
+	strcat(filePath, "/home/lms/CLionProjects/cteam/dataFile/");
+	strcat(filePath, loginUser -> id);
+	strcat(filePath, "/");
+
+	printf("+----------------------- 오 답 노 트 ------------------------+\n");
+	printf("  회차  |       일시       |   제출자   \n");
+
+	int i = 0;
+
+	DIR *dp = opendir(filePath);
+	struct dirent *dir;
+
+	if(dp == NULL){
+		fprintf(stderr,"directory open error\n");
+		exit(-1);
+	}
+
+	while((dir = readdir(dp)) != NULL || i >= 10){
+		if(dir->d_ino == 0 || dir->d_name[0] == '.' || dir->d_name[0] != 'W') continue;
+		strcpy(list[i].fileName, dir->d_name);
+		printf("%5d      ", i + 1);
+		strcpy(fileName, strstr(dir->d_name, "2"));
+		strcpy(strstr(fileName, "."), "\0");
+		printf("%s       ", fileName);
+		printf("%s\n",loginUser -> id); //제출자
+		i++;
+	}
+	closedir(dp);
+
+	printf("+----------------------------------------------------------+\n");
+	printf("풀이하실 회차를 선택해주세요 : ");
+	int userInput = fgetc(stdin) - '0';
+	strcat(filePath, list[userInput - 1].fileName);
+	FILE *fp = fopen(filePath, "rt");
+	if (fp == NULL) {
+		printf("오답노트 파일이 없습니다.\n");
+	}
+	Result wrong[40];
+
+    for(i = 0; i < 40; i++){
+        strcpy(wrong[i].fileName, "");
+        strcpy(wrong[i].question.questionNumber, "");
+        wrong[i].useYn = NULL;
+        strcpy(wrong[i].question.correct, "");
+    }
+	i = 0;
+	char line[STRING_SIZE];
+	while (fgets(line, STRING_SIZE, fp) != NULL) {
+		strcpy(wrong[i].question.questionNumber, strtok(line, ","));
+		wrong[i].useYn = 'Y';
+		i++;
+	}
+	fclose(fp);
+
+	i = 0;
+	while (strcmp(wrong[i].question.questionNumber, "") != 0) {
+		//문제불러오기
+		selQuestion(wrong[i].question.questionNumber, &(wrong[i].question));
+
+		char result[2] = "";
+		printf("답 입력 : ");
+		fscanf(stdin, "%s", result);
+		char passYn = 'N';
+        printf("strlen(wrong[i].question.correct) : %d\n", strlen(wrong[i].question.correct));
+		for (int j = 0; j < strlen(wrong[i].question.correct); j++) {
+			if (wrong[i].question.correct[j] == result[0]) {
+				passYn = 'Y';
+				break;
+			}
+		}
+
+		if (passYn == 'Y') {
+			printf("정답!\n");
+			printf("삭제하시겠습니까?\n");
+			fscanf(stdin, "%s", result);
+
+			if (toupper(result[0]) == 'Y') {
+				wrong[i].useYn = 'N';
+			}
+		} else {
+			printf("오답!\n");
+		}
+		i++;
+	}
+
+	FILE *fp2 = fopen(filePath, "wt");
+	if (fp2 == NULL) {
+		printf("잘못된 파일입니다.\n");
+	}
+	i = 0;
+	while (strcmp(wrong[i].question.questionNumber, "")) {
+		if (wrong[i].useYn == 'Y') {
+			fprintf(fp2, "%s,\n", wrong[i].question.questionNumber);
+		}
+        i++;
+	}
+	fclose(fp2);
+}
+
+void echoOff(){
+  	struct termios new_termios;
+
+    tcgetattr(STDIN_FILENO, &orig_termios);
+    new_termios = orig_termios;
+    new_termios.c_lflag &= ~ICANON;    // non-canonical input 설정
+    new_termios.c_lflag &= ~ECHO;      // 입력 시 터미널에 보이지 않게
+    new_termios.c_cc[VMIN] = 1;        // 최소 입력 버퍼 크기
+    new_termios.c_cc[VTIME] = 0;       //버퍼 비우는 시간 (timeout)
+    tcsetattr(STDIN_FILENO, TCSANOW, &new_termios);
+
+    return;
+}
+
+void echoOn(){
+	tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios);
+    return;
 }

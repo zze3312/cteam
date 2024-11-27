@@ -7,7 +7,7 @@
 // #define FILE_WRONG "../dataFile/WrongAnswerNote.txt" // 오답노트
 
 #include "/home/lms/CLionProjects/cteam/header/types.h"
-#define FILE_DATA "/home/lms/CLionProjects/cteam/dataFile/test.csv"
+#define FILE_DATA "/home/lms/CLionProjects/cteam/dataFile/test.txt"
 #define FILE_WRONG "/home/lms/CLionProjects/cteam/dataFile/WrongAnswerNote.txt" // 오답노트
 
 void selQuestion(char num[], Question *qst);
@@ -108,7 +108,7 @@ void selQuestion(char num[], Question *qst) {
 
                 for (int j = 0; j < strlen(temp); j++) {
                     if (temp[j] == '\0') break;
-                    if (temp[j] == '.' || (temp[j] == ',' && (cnt == 0 || cnt == 2)) || temp[j] == '\n') {
+                    if ((temp[j] == '.' && gubun == 0) || (temp[j] == ',' && (cnt == 0 || cnt == 2)) || temp[j] == '\n') {
                         splitYn = 'Y';
                         break;
                     }
@@ -117,7 +117,9 @@ void selQuestion(char num[], Question *qst) {
                     if (gubun == 0) {
                         strcpy(strstr(buffer, "."),"");
                         strcpy(question.questionNumber, buffer);
-                        printf("%s. ", question.questionNumber);
+                        if(strcmp(question.questionNumber, num) == 0){
+                            printf("%s. ", question.questionNumber);
+                        }
                     }else if (gubun == 6) {
                         strcpy(question.correct, buffer);
                     }
