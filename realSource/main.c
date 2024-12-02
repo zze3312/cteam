@@ -1,6 +1,6 @@
 #include "../header/frdDfn.h"
 
-void main(){
+void main(){                                                                                                                                                                                                                        
     srand(time(NULL));
     while(1)
     {

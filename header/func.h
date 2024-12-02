@@ -214,6 +214,7 @@ void userInfoFind(){
 	{
 		printf(" 해당 정보로 가입된 사용자를 찾을 수 없습니다.\n");
 	}
+    sleep(1);
 	fclose(fp);
 }
 
@@ -263,7 +264,7 @@ void userInfoAdd(){
 
 		if (flag == 'N')
 		{
-			printf(" 이미 가입된 정보입니다.\n 다시 입력해 주세요.\n 뒤로 가시려면 q를 입력하세요 : ");
+		    printf(" 이미 가입된 정보입니다.\n 다시 입력해 주세요.\n 뒤로 가시려면 q를 입력하세요 : ");
 			scanf("%c",&quit);
 		}
 		else
@@ -283,11 +284,12 @@ void userInfoAdd(){
             mkdir(filename, 0777);
 
 			fclose(fp);
-
+		    sleep(1);
 
 			break;
 		}
 	}
+
 }
 
 void userLogin(User *loginUser) {
